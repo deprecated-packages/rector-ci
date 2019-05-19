@@ -12,4 +12,4 @@ git add .
 git commit -m "Test commit"
 git push --set-upstream origin ${new_branch}
 
-php open-github-pr.php ${orig_branch}
+php open-github-pr.php ${orig_branch} ${new_branch}
