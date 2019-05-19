@@ -1,5 +1,16 @@
 #!/bin/bash
 
+# Real script:
+# 1. Clone repository
+# 2. cd to new repo
+# 3. composer require rector
+# 4. composer install
+# 5. run rector with some config
+# 6. git add all except rector
+# 7. commit
+# 8. push
+# 9. open PR
+
 orig_branch=$(git rev-parse --abbrev-ref HEAD)
 new_branch=${orig_branch}-rector
 
