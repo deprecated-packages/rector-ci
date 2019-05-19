@@ -1,3 +1,5 @@
+# Github API - Check if brach exists
+
 git checkout -b test
 echo 'Test' > test.txt
 git add .
