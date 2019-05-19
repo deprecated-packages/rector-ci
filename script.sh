@@ -1,7 +1,7 @@
 #!/bin/bash
 
 orig_branch=$(git rev-parse --abbrev-ref HEAD)
-new_branch=${orig_branch}-fix
+new_branch=${orig_branch}-rector
 
 # Github API - Check if brach exists
 # If fix PR already exists, should it edit existing PR with new commit? or delete it and replace?
