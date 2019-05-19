@@ -1,6 +1,6 @@
 #!/bin/bash
 
-orig_branch=git rev-parse --abbrev-ref HEAD
+orig_branch=$(git rev-parse --abbrev-ref HEAD)
 new_branch=${orig_branch}-fix
 
 # Github API - Check if brach exists
