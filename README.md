@@ -15,3 +15,5 @@ Creates new pull request with test file into your current branch.
 2. Dockerize + Webserver which will receive Github hooks (traefik)
 3. Run rector instead of dummy script
 4. Create new [Github APP](https://github.com/settings/apps)
+
+https://developer.github.com/v3/checks/
