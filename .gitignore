@@ -6,6 +6,9 @@
 /var/
 /vendor/
 ###< symfony/framework-bundle ###
+
+.phpunit.result.cache
+
 ###> symfony/web-server-bundle ###
 /.web-server-pid
 ###< symfony/web-server-bundle ###
@@ -14,3 +17,8 @@
 .phpunit
 /phpunit.xml
 ###< symfony/phpunit-bridge ###
+
+###> phpunit/phpunit ###
+/phpunit.xml
+.phpunit.result.cache
+###< phpunit/phpunit ###
