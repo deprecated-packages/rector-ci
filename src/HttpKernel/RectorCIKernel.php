@@ -25,11 +25,6 @@ class RectorCIKernel extends BaseKernel
         }
     }
 
-    public function getProjectDir(): string
-    {
-        return \dirname(__DIR__);
-    }
-
     protected function configureContainer(ContainerBuilder $container, LoaderInterface $loader): void
     {
         $container->addResource(new FileResource($this->getProjectDir().'/config/bundles.php'));
