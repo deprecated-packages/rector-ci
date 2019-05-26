@@ -5,6 +5,7 @@
         "php": ">=7.3",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "firebase/php-jwt": "^5.0",
         "guzzlehttp/guzzle": "^6.3",
         "sensio/framework-extra-bundle": "^5.3",
         "symfony/asset": "4.2.*",

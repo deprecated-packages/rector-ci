@@ -96,6 +96,9 @@
     "fig/link-util": {
         "version": "1.0.0"
     },
+    "firebase/php-jwt": {
+        "version": "v5.0.0"
+    },
     "guzzlehttp/guzzle": {
         "version": "6.3.3"
     },
