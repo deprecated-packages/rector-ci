@@ -117,6 +117,9 @@
     "myclabs/deep-copy": {
         "version": "1.9.1"
     },
+    "nette/utils": {
+        "version": "v3.0.1"
+    },
     "nikic/php-parser": {
         "version": "v4.2.1"
     },
