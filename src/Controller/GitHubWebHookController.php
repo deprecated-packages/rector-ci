@@ -32,40 +32,113 @@ final class GitHubWebHookController
             'iat' => time(),
         );
 
-        $data = Json::decode($request->getContent());
-        $installationId = $data->installation->id;
+        $webhookData = Json::decode($request->getContent());
+        $installationId = $webhookData->installation->id;
+        $repositoryName = $webhookData->repository->full_name;
 
         $jwt = JWT::encode($token, $privateKey, 'RS256');
 
-        $response = $client->request('POST', "https://api.github.com/app/installations/$installationId/access_tokens", [
+        $accessTokenResponse = $client->request('POST', "https://api.github.com/app/installations/$installationId/access_tokens", [
             RequestOptions::HEADERS => [
                 'Accept' => 'application/vnd.github.machine-man-preview+json',
                 'Authorization' => sprintf('Bearer %s', $jwt),
             ]
         ]);
 
-        $responseData = Json::decode($response->getBody()->getContents());
-        $cloneToken = $responseData->token;
-        $repositoryName = $data->repository->full_name;
-        $cloneUrl = $data->repository->clone_url;
-        $cloneUrl = sprintf('https://x-access-token:%s@', $cloneToken) . Strings::after($cloneUrl, 'https://');
+        $accessTokenResponseData = Json::decode($accessTokenResponse->getBody()->getContents());
+        $accessToken = $accessTokenResponseData->token;
 
-        $originalBranch = $data->check_suite->head_branch;
+        $cloneUrl = sprintf('https://x-access-token:%s@', $accessToken) . Strings::after($webhookData->repository->clone_url, 'https://');
+
+        $originalBranch = $webhookData->check_suite->head_branch;
         $newBranch = $originalBranch . '-rector';
 
-        shell_exec("git clone $cloneUrl ../repositories/$repositoryName");
-        shell_exec("cd ../repositories/$repositoryName && ../../../bin/script.sh $originalBranch $newBranch");
+        if (!is_file("../repositories/$repositoryName")) {
+            // shell_exec("git clone $cloneUrl ../repositories/$repositoryName");
+            // shell_exec("cd ../repositories/$repositoryName && ../../../bin/script.sh $originalBranch $newBranch");
+        } else {
 
-        // @TODO now it commits as user, maybe github app should commit instead??
+        }
 
-        $client = new Client();
-        $client->request('POST', "https://api.github.com/repos/$repositoryName/pulls", [
+        // 1. Create blob
+        $blobUrl = str_replace('{/sha}', '', $webhookData->repository->blobs_url);
+        $blobResponse = $client->request('POST', $blobUrl, [
             RequestOptions::HEADERS => [
                 'Accept' => 'application/vnd.github.v3+json',
-                'Authorization' => sprintf('Token %s', $cloneToken),
+                'Authorization' => sprintf('Token %s', $accessToken),
                 'Content-Type' => 'application/json',
             ],
             RequestOptions::BODY => Json::encode($body = [
+                'content' => 'Hello world',
+            ]),
+        ]);
+        $blobResponseData = Json::decode($blobResponse->getBody()->getContents());
+        $blobSha = $blobResponseData->sha;
+
+        // 2. Create tree
+        $originalTreeSha = $webhookData->check_suite->head_commit->tree_id;
+        $treeUrl = str_replace('{/sha}', '', $webhookData->repository->trees_url);
+        $treeResponse = $client->request('POST', $treeUrl, [
+            RequestOptions::HEADERS => [
+                'Accept' => 'application/vnd.github.v3+json',
+                'Authorization' => sprintf('Token %s', $accessToken),
+                'Content-Type' => 'application/json',
+            ],
+            RequestOptions::BODY => Json::encode($body = [
+                'base_tree' => $originalTreeSha,
+                'tree' => [
+                    [
+                        'path' => 'some-random-file.txt',
+                        'mode' => '100644',
+                        'type' => 'blob',
+                        'sha' => $blobSha,
+                    ]
+                ],
+            ]),
+        ]);
+        $treeResponseData = Json::decode($treeResponse->getBody()->getContents());
+        $treeSha = $treeResponseData->sha;
+
+        // 3. Create commit
+        $originalCommitSha = $webhookData->check_suite->head_commit->id;
+        $commitUrl = str_replace('{/sha}', '', $webhookData->repository->git_commits_url);
+        $commitResponse = $client->request('POST', $commitUrl, [
+            RequestOptions::HEADERS => [
+                'Accept' => 'application/vnd.github.v3+json',
+                'Authorization' => sprintf('Token %s', $accessToken),
+                'Content-Type' => 'application/json',
+            ],
+            RequestOptions::BODY => Json::encode($body = [
+                'message' => $originalTreeSha,
+                'parents' => [$originalCommitSha],
+                'tree' => $treeSha,
+            ]),
+        ]);
+        $commitResponseData = Json::decode($commitResponse->getBody()->getContents());
+        $commitSha = $commitResponseData->sha;
+
+        // 4. Create reference
+        $referenceUrl = str_replace('{/sha}', '', $webhookData->repository->git_refs_url);
+        $client->request('POST', $referenceUrl, [
+            RequestOptions::HEADERS => [
+                'Accept' => 'application/vnd.github.v3+json',
+                'Authorization' => sprintf('Token %s', $accessToken),
+                'Content-Type' => 'application/json',
+            ],
+            RequestOptions::BODY => Json::encode($body = [
+                'ref' => 'refs/heads/' . $newBranch,
+                'sha' => $commitSha,
+            ]),
+        ]);
+
+        // 5. Create pull request
+        $client->request('POST', "https://api.github.com/repos/$repositoryName/pulls", [
+            RequestOptions::HEADERS => [
+                'Accept' => 'application/vnd.github.v3+json',
+                'Authorization' => sprintf('Token %s', $accessToken),
+                'Content-Type' => 'application/json',
+            ],
+            RequestOptions::BODY => Json::encode([
                 'title' => 'Rector - Fix',
                 'head' => $newBranch,
                 'base' => $originalBranch,
@@ -73,6 +146,5 @@ final class GitHubWebHookController
             ]),
         ]);
 
-        return new Response($cloneUrl);
     }
 }
