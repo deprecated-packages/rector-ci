@@ -18,10 +18,16 @@ final class GitHubWebHookController
      */
     public function __invoke(Request $request): Response
     {
-        // TODO: Validate if event is check_suite
-        //$request->headers->get('X-Github-Event')
+        $event = $request->headers->get('X-Github-Event');
+        $webhookData = Json::decode($request->getContent());
 
-        // @TODO!! Very important! Prevent circular reference, only commits by human
+        if ($event !== 'check_suite') {
+            return new Response('Non check_suite event', Response::HTTP_ACCEPTED);
+        }
+
+        if ($webhookData->sender->type === 'Bot') {
+            return new Response('Not reacting to commits by bots', Response::HTTP_NOT_MODIFIED);
+        }
 
         $client = new Client();
 
@@ -32,7 +38,6 @@ final class GitHubWebHookController
             'iat' => time(),
         );
 
-        $webhookData = Json::decode($request->getContent());
         $installationId = $webhookData->installation->id;
         $repositoryName = $webhookData->repository->full_name;
 
@@ -109,7 +114,7 @@ final class GitHubWebHookController
                 'Content-Type' => 'application/json',
             ],
             RequestOptions::BODY => Json::encode($body = [
-                'message' => $originalTreeSha,
+                'message' => 'Rulling the wolrd via Rector!',
                 'parents' => [$originalCommitSha],
                 'tree' => $treeSha,
             ]),
@@ -132,7 +137,7 @@ final class GitHubWebHookController
         ]);
 
         // 5. Create pull request
-        $client->request('POST', "https://api.github.com/repos/$repositoryName/pulls", [
+        $pullRequestResponse = $client->request('POST', "https://api.github.com/repos/$repositoryName/pulls", [
             RequestOptions::HEADERS => [
                 'Accept' => 'application/vnd.github.v3+json',
                 'Authorization' => sprintf('Token %s', $accessToken),
@@ -145,6 +150,8 @@ final class GitHubWebHookController
                 'body' => 'Rector automated pull request',
             ]),
         ]);
+        $pullRequestResponseData = Json::decode($pullRequestResponse->getBody()->getContents());
 
+        return new Response($pullRequestResponseData->url);
     }
 }
