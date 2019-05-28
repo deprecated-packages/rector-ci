@@ -20,6 +20,8 @@ final class GitHubWebHookController
     {
         $event = $request->headers->get('X-Github-Event');
         $webhookData = Json::decode($request->getContent());
+        $originalBranch = $webhookData->check_suite->head_branch;
+        $newBranch = $originalBranch . '-rector';
 
         if ($event !== 'check_suite') {
             return new Response('Non check_suite event', Response::HTTP_ACCEPTED);
@@ -55,34 +57,54 @@ final class GitHubWebHookController
 
         $cloneUrl = sprintf('https://x-access-token:%s@', $accessToken) . Strings::after($webhookData->repository->clone_url, 'https://');
 
-        $originalBranch = $webhookData->check_suite->head_branch;
-        $newBranch = $originalBranch . '-rector';
 
         if (!is_file("../repositories/$repositoryName")) {
-            // shell_exec("git clone $cloneUrl ../repositories/$repositoryName");
-            // shell_exec("cd ../repositories/$repositoryName && ../../../bin/script.sh $originalBranch $newBranch");
-        } else {
-
+            shell_exec("git clone $cloneUrl ../repositories/$repositoryName");
         }
 
-        // 1. Create blob
+        shell_exec("cd ../repositories/$repositoryName && git checkout -f && git fetch -p && git checkout origin/$originalBranch");
+
+        // Tady chci spustit rectora
+        echo shell_exec('vendor/bin/rector process src --dry-run');
+        // Tady chci zjistit seznam vsech souboru co rector zmenil
+
+        die();
+
+        $changedFilesPaths = [];
+        $blobShas = [];
+
+        // 1. Create blobs
         $blobUrl = str_replace('{/sha}', '', $webhookData->repository->blobs_url);
-        $blobResponse = $client->request('POST', $blobUrl, [
-            RequestOptions::HEADERS => [
-                'Accept' => 'application/vnd.github.v3+json',
-                'Authorization' => sprintf('Token %s', $accessToken),
-                'Content-Type' => 'application/json',
-            ],
-            RequestOptions::BODY => Json::encode($body = [
-                'content' => 'Hello world',
-            ]),
-        ]);
-        $blobResponseData = Json::decode($blobResponse->getBody()->getContents());
-        $blobSha = $blobResponseData->sha;
+
+        foreach ($changedFilesPaths as $index => $changedFilePath) {
+            $blobResponse = $client->request('POST', $blobUrl, [
+                RequestOptions::HEADERS => [
+                    'Accept' => 'application/vnd.github.v3+json',
+                    'Authorization' => sprintf('Token %s', $accessToken),
+                    'Content-Type' => 'application/json',
+                ],
+                RequestOptions::BODY => Json::encode($body = [
+                    'content' => file_get_contents($changedFilePath),
+                ]),
+            ]);
+            $blobResponseData = Json::decode($blobResponse->getBody()->getContents());
+            $blobShas[$changedFilePath] = $blobResponseData->sha;
+        }
 
         // 2. Create tree
         $originalTreeSha = $webhookData->check_suite->head_commit->tree_id;
         $treeUrl = str_replace('{/sha}', '', $webhookData->repository->trees_url);
+        $tree = [];
+
+        foreach ($blobShas as $filePath => $blobSha) {
+            $tree[] = [
+                'path' => $filePath,
+                'mode' => '100644',
+                'type' => 'blob',
+                'sha' => $blobSha,
+            ];
+        }
+
         $treeResponse = $client->request('POST', $treeUrl, [
             RequestOptions::HEADERS => [
                 'Accept' => 'application/vnd.github.v3+json',
@@ -91,14 +113,7 @@ final class GitHubWebHookController
             ],
             RequestOptions::BODY => Json::encode($body = [
                 'base_tree' => $originalTreeSha,
-                'tree' => [
-                    [
-                        'path' => 'some-random-file.txt',
-                        'mode' => '100644',
-                        'type' => 'blob',
-                        'sha' => $blobSha,
-                    ]
-                ],
+                'tree' => $tree,
             ]),
         ]);
         $treeResponseData = Json::decode($treeResponse->getBody()->getContents());
@@ -122,6 +137,7 @@ final class GitHubWebHookController
         $commitResponseData = Json::decode($commitResponse->getBody()->getContents());
         $commitSha = $commitResponseData->sha;
 
+        // TODO: Force push?
         // 4. Create reference
         $referenceUrl = str_replace('{/sha}', '', $webhookData->repository->git_refs_url);
         $client->request('POST', $referenceUrl, [
@@ -136,6 +152,7 @@ final class GitHubWebHookController
             ]),
         ]);
 
+        // TODO: What if pull request already exists? We will find out :-)
         // 5. Create pull request
         $pullRequestResponse = $client->request('POST', "https://api.github.com/repos/$repositoryName/pulls", [
             RequestOptions::HEADERS => [

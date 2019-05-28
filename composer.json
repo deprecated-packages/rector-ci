@@ -1,13 +1,16 @@
 {
     "type": "project",
     "license": "proprietary",
+    "prefer-stable": true,
+    "minimum-stability": "dev",
     "require": {
         "php": ">=7.3",
         "ext-ctype": "*",
         "ext-iconv": "*",
         "firebase/php-jwt": "^5.0",
         "guzzlehttp/guzzle": "^6.3",
-        "nette/utils": "^3.0",
+        "nette/utils": "^2.5",
+        "rector/rector": "dev-master",
         "sensio/framework-extra-bundle": "^5.3",
         "symfony/asset": "4.2.*",
         "symfony/console": "4.2.*",
