@@ -20,17 +20,19 @@ final class GitHubWebHookController
     public function __invoke(Request $request): Response
     {
         $event = $request->headers->get('X-Github-Event');
-        $webhookData = Json::decode($request->getContent());
-        $originalBranch = $webhookData->check_suite->head_branch;
-        $newBranch = $originalBranch . '-rector';
 
         if ($event !== 'check_suite') {
             return new Response('Non check_suite event', Response::HTTP_ACCEPTED);
         }
 
+        $webhookData = Json::decode($request->getContent());
+
         if ($webhookData->sender->type === 'Bot') {
             return new Response('Not reacting to commits by bots', Response::HTTP_NOT_MODIFIED);
         }
+
+        $originalBranch = $webhookData->check_suite->head_branch;
+        $newBranch = $originalBranch . '-rector';
 
         $client = new Client();
 
