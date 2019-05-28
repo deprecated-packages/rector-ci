@@ -29,7 +29,7 @@ final class GitHubWebHookController
         $webhookData = Json::decode($request->getContent());
 
         if ($webhookData->sender->type === 'Bot') {
-            return new Response('Not reacting to commits by bots', Response::HTTP_NOT_MODIFIED);
+            return new Response('Not reacting to commits by bots', Response::HTTP_ACCEPTED);
         }
 
         $originalBranch = $webhookData->check_suite->head_branch;
