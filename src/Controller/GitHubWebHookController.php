@@ -4,6 +4,7 @@ namespace RectorCI\Controller;
 
 use Firebase\JWT\JWT;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\RequestOptions;
 use Nette\Utils\Json;
 use Nette\Utils\Strings;
@@ -161,17 +162,37 @@ final class GitHubWebHookController
         // TODO: Force push?
         // 4. Create reference
         $referenceUrl = str_replace('{/sha}', '', $webhookData->repository->git_refs_url);
-        $client->request('POST', $referenceUrl, [
-            RequestOptions::HEADERS => [
-                'Accept' => 'application/vnd.github.v3+json',
-                'Authorization' => sprintf('Token %s', $accessToken),
-                'Content-Type' => 'application/json',
-            ],
-            RequestOptions::BODY => Json::encode($body = [
-                'ref' => 'refs/heads/' . $newBranch,
-                'sha' => $commitSha,
-            ]),
-        ]);
+
+        try {
+            $client->request('POST', $referenceUrl, [
+                RequestOptions::HEADERS => [
+                    'Accept' => 'application/vnd.github.v3+json',
+                    'Authorization' => sprintf('Token %s', $accessToken),
+                    'Content-Type' => 'application/json',
+                ],
+                RequestOptions::BODY => Json::encode($body = [
+                    'ref' => 'refs/heads/' . $newBranch,
+                    'sha' => $commitSha,
+                ]),
+            ]);
+        } catch (ClientException $e) {
+            // Update reference, because it already exists
+            if ($e->getCode() === 422) {
+                $referenceUrl = str_replace('{/sha}', 'heads/' . $newBranch, $webhookData->repository->git_refs_url);
+
+                $client->request('PATCH', $referenceUrl, [
+                    RequestOptions::HEADERS => [
+                        'Accept' => 'application/vnd.github.v3+json',
+                        'Authorization' => sprintf('Token %s', $accessToken),
+                        'Content-Type' => 'application/json',
+                    ],
+                    RequestOptions::BODY => Json::encode($body = [
+                        'force' => true,
+                        'sha' => $commitSha,
+                    ]),
+                ]);
+            }
+        }
 
         // TODO: What if pull request already exists? We will find out :-)
         // 5. Create pull request
