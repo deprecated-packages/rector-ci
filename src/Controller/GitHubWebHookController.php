@@ -9,6 +9,7 @@ use Nette\Utils\Json;
 use Nette\Utils\Strings;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Annotation\Route;
 
 final class GitHubWebHookController
@@ -56,21 +57,34 @@ final class GitHubWebHookController
         $accessToken = $accessTokenResponseData->token;
 
         $cloneUrl = sprintf('https://x-access-token:%s@', $accessToken) . Strings::after($webhookData->repository->clone_url, 'https://');
+        $repositoryDirectory = __DIR__ . '/../../repositories/' . $repositoryName;
 
-
-        if (!is_file("../repositories/$repositoryName")) {
-            shell_exec("git clone $cloneUrl ../repositories/$repositoryName");
+        if (! file_exists("../repositories/$repositoryName")) {
+            $cloneProcess = new Process(['git', 'clone', $cloneUrl, $repositoryName, $repositoryDirectory]);
+            $cloneProcess->mustRun();
         }
 
-        shell_exec("cd ../repositories/$repositoryName && git checkout -f && git fetch -p && git checkout origin/$originalBranch");
+        $gitCheckoutChangesProcess = new Process(['git', 'checkout', '-f'], $repositoryDirectory);
+        $gitCheckoutChangesProcess->mustRun();
 
-        // Tady chci spustit rectora
-        echo shell_exec('vendor/bin/rector process src --dry-run');
-        // Tady chci zjistit seznam vsech souboru co rector zmenil
+        $gitFetchProcess = new Process(['git', 'fetch', '-p'], $repositoryDirectory);
+        $gitFetchProcess->mustRun();
 
-        die();
+        $gitCheckoutHeadProcess = new Process(['git', 'checkout', sprintf('origin/%s', $originalBranch)], $repositoryDirectory);
+        $gitCheckoutHeadProcess->mustRun();
 
-        $changedFilesPaths = [];
+        $composerInstallProcess = new Process(['composer', 'install'], $repositoryDirectory);
+        $composerInstallProcess->mustRun();
+
+        $rectorProcess = new Process(['vendor/bin/rector', 'process', 'src', '--output-format=json'], $repositoryDirectory, [
+            'APP_ENV' => false,
+            'APP_DEBUG' => false,
+            'SYMFONY_DOTENV_VARS' => false,
+        ]);
+        $rectorProcess->mustRun();
+
+        $rectorProcessOutput = Json::decode($rectorProcess->getOutput());
+        $changedFilesPaths = $rectorProcessOutput->changed_files;
         $blobShas = [];
 
         // 1. Create blobs
