@@ -65,7 +65,7 @@ final class GitHubWebHookController
         $repositoryDirectory = __DIR__ . '/../../repositories/' . $repositoryName;
 
         if (! file_exists("../repositories/$repositoryName")) {
-            $cloneProcess = new Process(['git', 'clone', $cloneUrl, $repositoryName, $repositoryDirectory]);
+            $cloneProcess = new Process(['git', 'clone', $cloneUrl, $repositoryDirectory]);
             $cloneProcess->mustRun();
         }
 
@@ -81,7 +81,9 @@ final class GitHubWebHookController
         $composerInstallProcess = new Process(['composer', 'install'], $repositoryDirectory);
         $composerInstallProcess->mustRun();
 
-        $rectorProcess = new Process(['vendor/bin/rector', 'process', 'src', '--output-format=json'], $repositoryDirectory, [
+        // @TODO rector binary
+        // @TODO: determine what directories to search, recursive search for common used code directories? (src, packages/**/src, tests), or create .rector-ci.yaml?
+        $rectorProcess = new Process(['../../../vendor/bin/rector', 'process', 'src', '--output-format=json'], $repositoryDirectory, [
             'APP_ENV' => false,
             'APP_DEBUG' => false,
             'SYMFONY_DOTENV_VARS' => false,
@@ -159,10 +161,10 @@ final class GitHubWebHookController
         $commitResponseData = Json::decode($commitResponse->getBody()->getContents());
         $commitSha = $commitResponseData->sha;
 
-        // TODO: Force push?
         // 4. Create reference
         $referenceUrl = str_replace('{/sha}', '', $webhookData->repository->git_refs_url);
 
+        // TODO: Instead of first trying it would be better to search for it and if not found create it
         try {
             $client->request('POST', $referenceUrl, [
                 RequestOptions::HEADERS => [
@@ -194,25 +196,46 @@ final class GitHubWebHookController
             }
         }
 
-        // TODO: What if pull request already exists? We will find out :-)
-        // 5. Create pull request
-        $pullRequestResponse = $client->request('POST', "https://api.github.com/repos/$repositoryName/pulls", [
+         // TODO: What about taking pull requests info from checksuite hook?
+
+        // Check if PR exists
+        $pullsUrl = str_replace('{/number}', '', $webhookData->repository->pulls_url);
+        $existingPullRequestResponse = $client->request('GET', "$pullsUrl?head=$newBranch", [
             RequestOptions::HEADERS => [
                 'Accept' => 'application/vnd.github.v3+json',
                 'Authorization' => sprintf('Token %s', $accessToken),
                 'Content-Type' => 'application/json',
             ],
-            RequestOptions::BODY => Json::encode([
-                'title' => 'Rector - Fix',
-                'head' => $newBranch,
-                'base' => $originalBranch,
-                'body' => 'Automated pull request by Rector',
-            ]),
         ]);
-        $pullRequestResponseData = Json::decode($pullRequestResponse->getBody()->getContents());
+        $existingPullRequestResponseData = Json::decode($existingPullRequestResponse->getBody()->getContents());
+
+        // PR does not exist yet
+        // 5. Create pull request, it does not exist
+        // @TODO: this condition is wrong, probably search does not work properly
+        // if (count($existingPullRequestResponseData) === 0) {
+            $pullRequestResponse = $client->request('POST', $pullsUrl, [
+                RequestOptions::HEADERS => [
+                    'Accept' => 'application/vnd.github.v3+json',
+                    'Authorization' => sprintf('Token %s', $accessToken),
+                    'Content-Type' => 'application/json',
+                ],
+                RequestOptions::BODY => Json::encode([
+                    'title' => 'Rector - Fix',
+                    'head' => $newBranch,
+                    'base' => $originalBranch,
+                    'body' => 'Automated pull request by Rector',
+                ]),
+            ]);
+
+            $pullRequestResponseData = Json::decode($pullRequestResponse->getBody()->getContents());
+        // }
+
+
+        // TODO: What if pull request already exists? We will find out :-)
+        // @TODO search for GET /repos/:owner/:repo/pulls?head=$newBranch
 
         // TODO: update check -> passed or failed? failed if there were any changes
 
-        return new Response($pullRequestResponseData->url);
+        return new Response('OK');
     }
 }
