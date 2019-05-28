@@ -33,7 +33,7 @@ final class GitHubWebHookController
         }
 
         $originalBranch = $webhookData->check_suite->head_branch;
-        $newBranch = $originalBranch . '-rector';
+        $newBranch = $originalBranch . '-rectified';
 
         $client = new Client();
 
@@ -178,7 +178,7 @@ final class GitHubWebHookController
         } catch (ClientException $e) {
             // Update reference, because it already exists
             if ($e->getCode() === 422) {
-                $referenceUrl = str_replace('{/sha}', 'heads/' . $newBranch, $webhookData->repository->git_refs_url);
+                $referenceUrl = str_replace('{/sha}', '/heads/' . $newBranch, $webhookData->repository->git_refs_url);
 
                 $client->request('PATCH', $referenceUrl, [
                     RequestOptions::HEADERS => [
