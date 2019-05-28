@@ -56,6 +56,8 @@ final class GitHubWebHookController
         $accessTokenResponseData = Json::decode($accessTokenResponse->getBody()->getContents());
         $accessToken = $accessTokenResponseData->token;
 
+        // TODO: Create github check
+
         $cloneUrl = sprintf('https://x-access-token:%s@', $accessToken) . Strings::after($webhookData->repository->clone_url, 'https://');
         $repositoryDirectory = __DIR__ . '/../../repositories/' . $repositoryName;
 
@@ -87,6 +89,9 @@ final class GitHubWebHookController
         $changedFilesPaths = $rectorProcessOutput->changed_files;
         $blobShas = [];
 
+        // TODO: decide if something was changed or not
+        // TODO: if not, skip committing and creating PR
+
         // 1. Create blobs
         $blobUrl = str_replace('{/sha}', '', $webhookData->repository->blobs_url);
 
@@ -98,7 +103,7 @@ final class GitHubWebHookController
                     'Content-Type' => 'application/json',
                 ],
                 RequestOptions::BODY => Json::encode($body = [
-                    'content' => file_get_contents($changedFilePath),
+                    'content' => file_get_contents($repositoryDirectory . '/' . $changedFilePath),
                 ]),
             ]);
             $blobResponseData = Json::decode($blobResponse->getBody()->getContents());
@@ -178,10 +183,12 @@ final class GitHubWebHookController
                 'title' => 'Rector - Fix',
                 'head' => $newBranch,
                 'base' => $originalBranch,
-                'body' => 'Rector automated pull request',
+                'body' => 'Automated pull request by Rector',
             ]),
         ]);
         $pullRequestResponseData = Json::decode($pullRequestResponse->getBody()->getContents());
+
+        // TODO: update check -> passed or failed? failed if there were any changes
 
         return new Response($pullRequestResponseData->url);
     }
