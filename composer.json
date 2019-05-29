@@ -10,7 +10,7 @@
         "firebase/php-jwt": "^5.0",
         "guzzlehttp/guzzle": "^6.3",
         "nette/utils": "^3.0",
-        "rector/rector": "dev-symplify-bump",
+        "rector/rector": "^0.5.0",
         "sensio/framework-extra-bundle": "^5.3",
         "symfony/asset": "4.2.*",
         "symfony/console": "4.2.*",
