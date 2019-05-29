@@ -4,8 +4,8 @@ namespace Rector\RectorCI\Samples;
 
 final class ExampleClassToBeRectored
 {
-    public static function createException(): \Rector\RectorCI\Samples\ExampleException
+    public static function createException(): ExampleException
     {
-        return new \Rector\RectorCI\Samples\ExampleException();
+        return new ExampleException();
     }
 }
