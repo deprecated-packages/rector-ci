@@ -20,9 +20,9 @@ final class GitHubWebHookController
      */
     private $client;
 
-    public function __construct(Client $client)
+    public function __construct()
     {
-        $this->client = $client;
+        $this->client = new Client();
     }
 
     /**
@@ -39,6 +39,8 @@ final class GitHubWebHookController
         }
 
         $webhookData = Json::decode($request->getContent());
+
+        // Check for requested event, ignore others
 
         if ($webhookData->sender->type === 'Bot') {
             return new Response('Not reacting to commits by bots', Response::HTTP_ACCEPTED);
@@ -74,6 +76,7 @@ final class GitHubWebHookController
         $accessTokenResponseData = Json::decode($accessTokenResponse->getBody()->getContents());
         $accessToken = $accessTokenResponseData->token;
 
+        /*
         $checkUrl = "https://api.github.com/repos/${repositoryName}/check-runs";
         $checkCreateResponse = $this->client->request('POST', $checkUrl, [
             RequestOptions::HEADERS => [
@@ -89,7 +92,7 @@ final class GitHubWebHookController
             ]),
         ]);
         $checkCreateResponseData = Json::decode($checkCreateResponse->getBody()->getContents());
-
+*/
 
         $cloneUrl = sprintf('https://x-access-token:%s@', $accessToken) . Strings::after(
             $webhookData->repository->clone_url,
@@ -276,6 +279,7 @@ final class GitHubWebHookController
 
         // TODO: check could pass too (count changed files === 0)
         // Update check
+        /*
         $checkUrl = $checkCreateResponseData->url;
         $this->client->request('PATCH', $checkUrl, [
             RequestOptions::HEADERS => [
@@ -285,11 +289,11 @@ final class GitHubWebHookController
             ],
             RequestOptions::BODY => Json::encode([
                 'conclusion' => 'action_required',
-                'completed_at' => (new \DateTimeImmutable())->format(\DateTimeInterface::ISO8601),
+                'completed_at' => (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
                 'details_url' => $pullRequestResponseData->html_url,
             ]),
         ]);
-
+*/
         return new Response('OK');
     }
 }
