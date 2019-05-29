@@ -1,11 +1,11 @@
 <?php declare (strict_types=1);
 
-namespace RectorCI\Samples;
+namespace Rector\RectorCI\Samples;
 
 final class ExampleClassToBeRectored
 {
-    public static function createException(): \RectorCI\Samples\ExampleException
+    public static function createException(): \Rector\RectorCI\Samples\ExampleException
     {
-        return new \RectorCI\Samples\ExampleException();
+        return new \Rector\RectorCI\Samples\ExampleException();
     }
 }

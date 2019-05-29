@@ -1,6 +1,6 @@
 <?php
 
-use RectorCI\HttpKernel\RectorCIKernel;
+use Rector\RectorCI\HttpKernel\RectorCIKernel;
 use Symfony\Component\Debug\Debug;
 use Symfony\Component\HttpFoundation\Request;
 

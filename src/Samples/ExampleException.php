@@ -1,6 +1,6 @@
 <?php declare (strict_types=1);
 
-namespace RectorCI\Samples;
+namespace Rector\RectorCI\Samples;
 
 final class ExampleException extends \Exception
 {
