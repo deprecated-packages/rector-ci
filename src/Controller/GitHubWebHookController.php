@@ -32,6 +32,8 @@ final class GitHubWebHookController
     {
         $event = $request->headers->get('X-Github-Event');
 
+        // @TODO: we should listen for check_run event as well (used when re-running check runs)
+
         if ($event !== 'check_suite') {
             return new Response('Non check_suite event', Response::HTTP_ACCEPTED);
         }
@@ -54,6 +56,7 @@ final class GitHubWebHookController
 
         $installationId = $webhookData->installation->id;
         $repositoryName = $webhookData->repository->full_name;
+        $originalCommitSha = $webhookData->check_suite->head_commit->id;
 
         $jwt = JWT::encode($token, $privateKey, 'RS256');
 
@@ -71,7 +74,22 @@ final class GitHubWebHookController
         $accessTokenResponseData = Json::decode($accessTokenResponse->getBody()->getContents());
         $accessToken = $accessTokenResponseData->token;
 
-        // TODO: Create github check
+        $checkUrl = "https://api.github.com/repos/${repositoryName}/check-runs";
+        $checkCreateResponse = $this->client->request('POST', $checkUrl, [
+            RequestOptions::HEADERS => [
+                'Accept' => 'application/vnd.github.antiope-preview+json',
+                'Authorization' => sprintf('Token %s', $accessToken),
+                'Content-Type' => 'application/json',
+            ],
+            RequestOptions::BODY => Json::encode([
+                'name' => 'rectification',
+                'head_sha' => $originalCommitSha,
+                'status' => 'in_progress',
+
+            ]),
+        ]);
+        $checkCreateResponseData = Json::decode($checkCreateResponse->getBody()->getContents());
+
 
         $cloneUrl = sprintf('https://x-access-token:%s@', $accessToken) . Strings::after(
             $webhookData->repository->clone_url,
@@ -131,7 +149,7 @@ final class GitHubWebHookController
                     'Authorization' => sprintf('Token %s', $accessToken),
                     'Content-Type' => 'application/json',
                 ],
-                RequestOptions::BODY => Json::encode($body = [
+                RequestOptions::BODY => Json::encode([
                     'content' => file_get_contents($repositoryDirectory . '/' . $changedFilePath),
                 ]),
             ]);
@@ -159,7 +177,7 @@ final class GitHubWebHookController
                 'Authorization' => sprintf('Token %s', $accessToken),
                 'Content-Type' => 'application/json',
             ],
-            RequestOptions::BODY => Json::encode($body = [
+            RequestOptions::BODY => Json::encode([
                 'base_tree' => $originalTreeSha,
                 'tree' => $tree,
             ]),
@@ -168,7 +186,6 @@ final class GitHubWebHookController
         $treeSha = $treeResponseData->sha;
 
         // 3. Create commit
-        $originalCommitSha = $webhookData->check_suite->head_commit->id;
         $commitUrl = str_replace('{/sha}', '', $webhookData->repository->git_commits_url);
         $commitResponse = $this->client->request('POST', $commitUrl, [
             RequestOptions::HEADERS => [
@@ -176,7 +193,7 @@ final class GitHubWebHookController
                 'Authorization' => sprintf('Token %s', $accessToken),
                 'Content-Type' => 'application/json',
             ],
-            RequestOptions::BODY => Json::encode($body = [
+            RequestOptions::BODY => Json::encode([
                 'message' => 'Rulling the wolrd via Rector!',
                 'parents' => [$originalCommitSha],
                 'tree' => $treeSha,
@@ -196,7 +213,7 @@ final class GitHubWebHookController
                     'Authorization' => sprintf('Token %s', $accessToken),
                     'Content-Type' => 'application/json',
                 ],
-                RequestOptions::BODY => Json::encode($body = [
+                RequestOptions::BODY => Json::encode([
                     'ref' => 'refs/heads/' . $newBranch,
                     'sha' => $commitSha,
                 ]),
@@ -212,7 +229,7 @@ final class GitHubWebHookController
                         'Authorization' => sprintf('Token %s', $accessToken),
                         'Content-Type' => 'application/json',
                     ],
-                    RequestOptions::BODY => Json::encode($body = [
+                    RequestOptions::BODY => Json::encode([
                         'force' => true,
                         'sha' => $commitSha,
                     ]),
@@ -257,7 +274,21 @@ final class GitHubWebHookController
         // TODO: What if pull request already exists? We will find out :-)
         // @TODO search for GET /repos/:owner/:repo/pulls?head=$newBranch
 
-        // TODO: update check -> passed or failed? failed if there were any changes
+        // TODO: check could pass too (count changed files === 0)
+        // Update check
+        $checkUrl = $checkCreateResponseData->url;
+        $this->client->request('PATCH', $checkUrl, [
+            RequestOptions::HEADERS => [
+                'Accept' => 'application/vnd.github.antiope-preview+json',
+                'Authorization' => sprintf('Token %s', $accessToken),
+                'Content-Type' => 'application/json',
+            ],
+            RequestOptions::BODY => Json::encode([
+                'conclusion' => 'action_required',
+                'completed_at' => (new \DateTimeImmutable())->format(\DateTimeInterface::ISO8601),
+                'details_url' => $pullRequestResponseData->html_url,
+            ]),
+        ]);
 
         return new Response('OK');
     }
