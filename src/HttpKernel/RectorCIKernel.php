@@ -1,6 +1,6 @@
 <?php
 
-namespace RectorCI\HttpKernel;
+namespace Rector\RectorCI\HttpKernel;
 
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\Config\Loader\LoaderInterface;

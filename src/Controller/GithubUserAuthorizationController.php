@@ -1,6 +1,6 @@
 <?php declare (strict_types=1);
 
-namespace RectorCI\Controller;
+namespace Rector\RectorCI\Controller;
 
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
