@@ -1,4 +1,4 @@
-<?php declare (strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Rector\RectorCI\Controller;
 
@@ -15,6 +15,16 @@ use Symfony\Component\Routing\Annotation\Route;
 
 final class GitHubWebHookController
 {
+    /**
+     * @var Client
+     */
+    private $client;
+
+    public function __construct(Client $client)
+    {
+        $this->client = $client;
+    }
+
     /**
      * @Route("/web-hooks/github", methods={"POST"})
      */
@@ -35,36 +45,41 @@ final class GitHubWebHookController
         $originalBranch = $webhookData->check_suite->head_branch;
         $newBranch = $originalBranch . '-rectified';
 
-        $client = new Client();
-
         $privateKey = file_get_contents(__DIR__ . '/../../config/keys/rector-ci.pem');
-        $token = array(
+        $token = [
             'iss' => getenv('GITHUB_APP_ID'),
             'exp' => time() + (10 * 60),
             'iat' => time(),
-        );
+        ];
 
         $installationId = $webhookData->installation->id;
         $repositoryName = $webhookData->repository->full_name;
 
         $jwt = JWT::encode($token, $privateKey, 'RS256');
 
-        $accessTokenResponse = $client->request('POST', "https://api.github.com/app/installations/$installationId/access_tokens", [
-            RequestOptions::HEADERS => [
-                'Accept' => 'application/vnd.github.machine-man-preview+json',
-                'Authorization' => sprintf('Bearer %s', $jwt),
+        $accessTokenResponse = $this->client->request(
+            'POST',
+            "https://api.github.com/app/installations/${installationId}/access_tokens",
+            [
+                RequestOptions::HEADERS => [
+                    'Accept' => 'application/vnd.github.machine-man-preview+json',
+                    'Authorization' => sprintf('Bearer %s', $jwt),
+                ],
             ]
-        ]);
+        );
 
         $accessTokenResponseData = Json::decode($accessTokenResponse->getBody()->getContents());
         $accessToken = $accessTokenResponseData->token;
 
         // TODO: Create github check
 
-        $cloneUrl = sprintf('https://x-access-token:%s@', $accessToken) . Strings::after($webhookData->repository->clone_url, 'https://');
+        $cloneUrl = sprintf('https://x-access-token:%s@', $accessToken) . Strings::after(
+            $webhookData->repository->clone_url,
+            'https://'
+        );
         $repositoryDirectory = __DIR__ . '/../../repositories/' . $repositoryName;
 
-        if (! file_exists("../repositories/$repositoryName")) {
+        if (! file_exists("../repositories/${repositoryName}")) {
             $cloneProcess = new Process(['git', 'clone', $cloneUrl, $repositoryDirectory]);
             $cloneProcess->mustRun();
         }
@@ -75,7 +90,11 @@ final class GitHubWebHookController
         $gitFetchProcess = new Process(['git', 'fetch', '-p'], $repositoryDirectory);
         $gitFetchProcess->mustRun();
 
-        $gitCheckoutHeadProcess = new Process(['git', 'checkout', sprintf('origin/%s', $originalBranch)], $repositoryDirectory);
+        $gitCheckoutHeadProcess = new Process([
+            'git',
+            'checkout',
+            sprintf('origin/%s', $originalBranch),
+        ], $repositoryDirectory);
         $gitCheckoutHeadProcess->mustRun();
 
         $composerInstallProcess = new Process(['composer', 'install'], $repositoryDirectory);
@@ -83,7 +102,12 @@ final class GitHubWebHookController
 
         // @TODO rector binary
         // @TODO: determine what directories to search, recursive search for common used code directories? (src, packages/**/src, tests), or create .rector-ci.yaml?
-        $rectorProcess = new Process(['../../../vendor/bin/rector', 'process', 'src', '--output-format=json'], $repositoryDirectory, [
+        $rectorProcess = new Process([
+            '../../../vendor/bin/rector',
+            'process',
+            'src',
+            '--output-format=json',
+        ], $repositoryDirectory, [
             'APP_ENV' => false,
             'APP_DEBUG' => false,
             'SYMFONY_DOTENV_VARS' => false,
@@ -101,7 +125,7 @@ final class GitHubWebHookController
         $blobUrl = str_replace('{/sha}', '', $webhookData->repository->blobs_url);
 
         foreach ($changedFilesPaths as $index => $changedFilePath) {
-            $blobResponse = $client->request('POST', $blobUrl, [
+            $blobResponse = $this->client->request('POST', $blobUrl, [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/vnd.github.v3+json',
                     'Authorization' => sprintf('Token %s', $accessToken),
@@ -129,7 +153,7 @@ final class GitHubWebHookController
             ];
         }
 
-        $treeResponse = $client->request('POST', $treeUrl, [
+        $treeResponse = $this->client->request('POST', $treeUrl, [
             RequestOptions::HEADERS => [
                 'Accept' => 'application/vnd.github.v3+json',
                 'Authorization' => sprintf('Token %s', $accessToken),
@@ -146,7 +170,7 @@ final class GitHubWebHookController
         // 3. Create commit
         $originalCommitSha = $webhookData->check_suite->head_commit->id;
         $commitUrl = str_replace('{/sha}', '', $webhookData->repository->git_commits_url);
-        $commitResponse = $client->request('POST', $commitUrl, [
+        $commitResponse = $this->client->request('POST', $commitUrl, [
             RequestOptions::HEADERS => [
                 'Accept' => 'application/vnd.github.v3+json',
                 'Authorization' => sprintf('Token %s', $accessToken),
@@ -166,7 +190,7 @@ final class GitHubWebHookController
 
         // TODO: Instead of first trying it would be better to search for it and if not found create it
         try {
-            $client->request('POST', $referenceUrl, [
+            $this->client->request('POST', $referenceUrl, [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/vnd.github.v3+json',
                     'Authorization' => sprintf('Token %s', $accessToken),
@@ -177,12 +201,12 @@ final class GitHubWebHookController
                     'sha' => $commitSha,
                 ]),
             ]);
-        } catch (ClientException $e) {
+        } catch (ClientException $clientException) {
             // Update reference, because it already exists
-            if ($e->getCode() === 422) {
+            if ($clientException->getCode() === 422) {
                 $referenceUrl = str_replace('{/sha}', '/heads/' . $newBranch, $webhookData->repository->git_refs_url);
 
-                $client->request('PATCH', $referenceUrl, [
+                $this->client->request('PATCH', $referenceUrl, [
                     RequestOptions::HEADERS => [
                         'Accept' => 'application/vnd.github.v3+json',
                         'Authorization' => sprintf('Token %s', $accessToken),
@@ -196,11 +220,11 @@ final class GitHubWebHookController
             }
         }
 
-         // TODO: What about taking pull requests info from checksuite hook?
+        // TODO: What about taking pull requests info from checksuite hook?
 
         // Check if PR exists
         $pullsUrl = str_replace('{/number}', '', $webhookData->repository->pulls_url);
-        $existingPullRequestResponse = $client->request('GET', "$pullsUrl?head=$newBranch", [
+        $existingPullRequestResponse = $this->client->request('GET', "${pullsUrl}?head=${newBranch}", [
             RequestOptions::HEADERS => [
                 'Accept' => 'application/vnd.github.v3+json',
                 'Authorization' => sprintf('Token %s', $accessToken),
@@ -213,23 +237,22 @@ final class GitHubWebHookController
         // 5. Create pull request, it does not exist
         // @TODO: this condition is wrong, probably search does not work properly
         // if (count($existingPullRequestResponseData) === 0) {
-            $pullRequestResponse = $client->request('POST', $pullsUrl, [
-                RequestOptions::HEADERS => [
-                    'Accept' => 'application/vnd.github.v3+json',
-                    'Authorization' => sprintf('Token %s', $accessToken),
-                    'Content-Type' => 'application/json',
-                ],
-                RequestOptions::BODY => Json::encode([
-                    'title' => 'Rector - Fix',
-                    'head' => $newBranch,
-                    'base' => $originalBranch,
-                    'body' => 'Automated pull request by Rector',
-                ]),
-            ]);
+        $pullRequestResponse = $this->client->request('POST', $pullsUrl, [
+            RequestOptions::HEADERS => [
+                'Accept' => 'application/vnd.github.v3+json',
+                'Authorization' => sprintf('Token %s', $accessToken),
+                'Content-Type' => 'application/json',
+            ],
+            RequestOptions::BODY => Json::encode([
+                'title' => 'Rector - Fix',
+                'head' => $newBranch,
+                'base' => $originalBranch,
+                'body' => 'Automated pull request by Rector',
+            ]),
+        ]);
 
-            $pullRequestResponseData = Json::decode($pullRequestResponse->getBody()->getContents());
+        $pullRequestResponseData = Json::decode($pullRequestResponse->getBody()->getContents());
         // }
-
 
         // TODO: What if pull request already exists? We will find out :-)
         // @TODO search for GET /repos/:owner/:repo/pulls?head=$newBranch
