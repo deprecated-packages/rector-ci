@@ -3,10 +3,10 @@ parameters:
 
 services:
     _defaults:
-        autowire: true      # Automatically injects dependencies in your services.
-        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
-#        public: true
+        autowire: true
+        autoconfigure: true
+        public: true
 
     Rector\RectorCI\:
         resource: '../src/*'
-        exclude: '../src/{DependencyInjection,Entity,Migrations,Tests,RectorCIKernel.php}'
+        exclude: '../src/{DependencyInjection,Entity,Migrations,Tests,HttpKernel/RectorCIKernel.php}'
