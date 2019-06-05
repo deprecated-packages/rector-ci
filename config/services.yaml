@@ -10,3 +10,12 @@ services:
     Rector\RectorCI\:
         resource: '../src/*'
         exclude: '../src/{DependencyInjection,Entity,Migrations,Tests,HttpKernel/RectorCIKernel.php}'
+
+    Rector\RectorCI\GitHub\GithubJWTTokenFactory:
+        arguments:
+            - '%env(GITHUB_APP_ID)%'
+            - '%env(GITHUB_APP_PRIVATE_KEY)%'
+
+    github.jwt.token:
+        class: Lcobucci\JWT\Token
+        factory: ['@Rector\RectorCI\GitHub\GithubJWTTokenFactory', 'create']
