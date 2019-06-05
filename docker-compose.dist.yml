@@ -2,7 +2,7 @@ version: "3.7"
 services:
     web:
         image: rector-ci_org
-        restart: always
+        restart: unless-stopped
         build:
             context: .
             target: dev
@@ -10,12 +10,9 @@ services:
         environment:
             XDEBUG_CONFIG: "remote_host=host.docker.internal"
             PHP_IDE_CONFIG: "serverName=rector-ci_org"
-            APP_ENV: dev
-            APP_DEBUG: 1
-            APP_SECRET: 67d829bf61dc5f87a73fd814e2c9f629
         ports:
             - "8080:80"
+        tmpfs:
+            - /var/www/rector-ci.org/var/cache
         volumes:
-            - .:/app:cached
-        depends_on:
-            - mysql
+            - .:/var/www/rector-ci.org:cached
