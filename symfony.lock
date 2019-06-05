@@ -123,6 +123,9 @@
     "guzzlehttp/psr7": {
         "version": "1.5.2"
     },
+    "http-interop/http-factory-guzzle": {
+        "version": "1.0.0"
+    },
     "illuminate/contracts": {
         "version": "v5.8.19"
     },
@@ -207,6 +210,9 @@
     "php-http/client-common": {
         "version": "1.9.1"
     },
+    "php-http/curl-client": {
+        "version": "v1.7.1"
+    },
     "php-http/discovery": {
         "version": "1.6.1"
     },
@@ -279,6 +285,9 @@
     "psr/container": {
         "version": "1.0.0"
     },
+    "psr/http-factory": {
+        "version": "1.0.1"
+    },
     "psr/http-message": {
         "version": "1.0.1"
     },
@@ -293,6 +302,9 @@
     },
     "ralouphie/getallheaders": {
         "version": "2.0.5"
+    },
+    "ramsey/uuid": {
+        "version": "3.8.0"
     },
     "rector/rector": {
         "version": "v0.4.12"
@@ -343,6 +355,24 @@
         },
         "files": [
             "config/packages/sensio_framework_extra.yaml"
+        ]
+    },
+    "sentry/sdk": {
+        "version": "2.0.3"
+    },
+    "sentry/sentry": {
+        "version": "2.1.0"
+    },
+    "sentry/sentry-symfony": {
+        "version": "3.0",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "master",
+            "version": "3.0",
+            "ref": "9746f0823302d7980e5273ef7a69ef3f5ac80914"
+        },
+        "files": [
+            "config/packages/sentry.yaml"
         ]
     },
     "slevomat/coding-standard": {
@@ -688,6 +718,9 @@
     },
     "zendframework/zend-code": {
         "version": "3.3.1"
+    },
+    "zendframework/zend-diactoros": {
+        "version": "2.1.2"
     },
     "zendframework/zend-eventmanager": {
         "version": "3.2.1"

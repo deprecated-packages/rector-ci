@@ -13,6 +13,7 @@
         "php-http/guzzle6-adapter": "^1.1",
         "rector/rector": "dev-master",
         "sensio/framework-extra-bundle": "^5.3",
+        "sentry/sentry-symfony": "^3.0",
         "symfony/asset": "4.3.*",
         "symfony/console": "4.3.*",
         "symfony/dotenv": "4.3.*",
@@ -84,7 +85,7 @@
     },
     "extra": {
         "symfony": {
-            "allow-contrib": false,
+            "allow-contrib": true,
             "require": "4.3.*"
         }
     }

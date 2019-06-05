@@ -29,6 +29,8 @@ COPY ./.docker/apache/apache.conf /etc/apache2/sites-available/000-default.conf
 
 # TODO: performance optimizations https://symfony.com/doc/current/performance.html
 
+# TODO: Run "composer dump-env prod" to compile .env files for production use (requires symfony/flex >=1.2).
+
 COPY composer.json composer.lock ./
 
 RUN composer install --prefer-dist --no-scripts --no-autoloader --no-progress --no-suggest \
