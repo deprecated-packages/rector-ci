@@ -2,12 +2,11 @@
 
 namespace Rector\RectorCI\Controller;
 
-use Firebase\JWT\JWT;
-use GuzzleHttp\Client;
+use Github\Client as Github;
 use GuzzleHttp\Exception\ClientException;
-use GuzzleHttp\RequestOptions;
 use Nette\Utils\Json;
-use Nette\Utils\Strings;
+use Rector\RectorCI\GitHub\Events\GithubEvent;
+use Rector\RectorCI\GitHub\GithubInstallationAuthenticator;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Process\Process;
@@ -16,13 +15,19 @@ use Symfony\Component\Routing\Annotation\Route;
 final class GitHubWebHookController
 {
     /**
-     * @var Client
+     * @var GithubInstallationAuthenticator
      */
-    private $client;
+    private $githubInstallationAuthenticator;
 
-    public function __construct()
+    /**
+     * @var Github
+     */
+    private $github;
+
+    public function __construct(Github $github, GithubInstallationAuthenticator $githubInstallationAuthenticator)
     {
-        $this->client = new Client();
+        $this->githubInstallationAuthenticator = $githubInstallationAuthenticator;
+        $this->github = $github;
     }
 
     /**
@@ -33,76 +38,29 @@ final class GitHubWebHookController
         $event = $request->headers->get('X-Github-Event');
 
         // @TODO: we should listen for check_run event as well (used when re-running check runs)
-
-        if ($event !== 'check_suite') {
+        if ($event !== GithubEvent::CHECK_SUITE) {
             return new Response('Non check_suite event', Response::HTTP_ACCEPTED);
         }
 
         $webhookData = Json::decode($request->getContent());
 
-        // Check for requested event, ignore others
-
         if ($webhookData->sender->type === 'Bot') {
             return new Response('Not reacting to commits by bots', Response::HTTP_ACCEPTED);
         }
 
+        // @TODO: Check for requested action, ignore others
+
         $originalBranch = $webhookData->check_suite->head_branch;
         $newBranch = $originalBranch . '-rectified';
+        $repositoryFullName = $webhookData->repository->full_name;
+        $username = $webhookData->repository->owner->login;
+        $repositoryName = $webhookData->repository->name;
+        $accessToken = $this->githubInstallationAuthenticator->authenticate($webhookData->installation->id);
 
-        $privateKey = file_get_contents(__DIR__ . '/../../config/keys/rector-ci.pem');
-        $token = [
-            'iss' => getenv('GITHUB_APP_ID'),
-            'exp' => time() + (10 * 60),
-            'iat' => time(),
-        ];
+        $repositoryDirectory = __DIR__ . '/../../repositories/' . $repositoryFullName;
 
-        $installationId = $webhookData->installation->id;
-        $repositoryName = $webhookData->repository->full_name;
-        $originalCommitSha = $webhookData->check_suite->head_commit->id;
-
-        $jwt = JWT::encode($token, $privateKey, 'RS256');
-
-        $accessTokenResponse = $this->client->request(
-            'POST',
-            "https://api.github.com/app/installations/${installationId}/access_tokens",
-            [
-                RequestOptions::HEADERS => [
-                    'Accept' => 'application/vnd.github.machine-man-preview+json',
-                    'Authorization' => sprintf('Bearer %s', $jwt),
-                ],
-            ]
-        );
-
-        $accessTokenResponseData = Json::decode($accessTokenResponse->getBody()->getContents());
-        $accessToken = $accessTokenResponseData->token;
-
-        /*
-        $checkUrl = "https://api.github.com/repos/${repositoryName}/check-runs";
-        $checkCreateResponse = $this->client->request('POST', $checkUrl, [
-            RequestOptions::HEADERS => [
-                'Accept' => 'application/vnd.github.antiope-preview+json',
-                'Authorization' => sprintf('Token %s', $accessToken),
-                'Content-Type' => 'application/json',
-            ],
-            RequestOptions::BODY => Json::encode([
-                'name' => 'rectification',
-                'head_sha' => $originalCommitSha,
-                'status' => 'in_progress',
-
-            ]),
-        ]);
-        $checkCreateResponseData = Json::decode($checkCreateResponse->getBody()->getContents());
-*/
-
-        $cloneUrl = sprintf('https://x-access-token:%s@', $accessToken) . Strings::after(
-            $webhookData->repository->clone_url,
-            'https://'
-        );
-        $repositoryDirectory = __DIR__ . '/../../repositories/' . $repositoryName;
-
-        if (! file_exists("../repositories/${repositoryName}")) {
-            $cloneProcess = new Process(['git', 'clone', $cloneUrl, $repositoryDirectory]);
-            $cloneProcess->mustRun();
+        if (! file_exists($repositoryDirectory)) {
+            $this->cloneRepository($repositoryFullName, $accessToken, $repositoryDirectory);
         }
 
         $gitCheckoutChangesProcess = new Process(['git', 'checkout', '-f'], $repositoryDirectory);
@@ -119,9 +77,11 @@ final class GitHubWebHookController
         $gitCheckoutHeadProcess->mustRun();
 
         $composerInstallProcess = new Process(['composer', 'install'], $repositoryDirectory);
+        $composerInstallProcess->setTimeout(null);
         $composerInstallProcess->mustRun();
 
-        // @TODO rector binary
+        // @TODO: rector binary?
+        // @TODO: case target directory does not have rector.yaml
         // @TODO: determine what directories to search, recursive search for common used code directories? (src, packages/**/src, tests), or create .rector-ci.yaml?
         $rectorProcess = new Process([
             '../../../vendor/bin/rector',
@@ -133,38 +93,27 @@ final class GitHubWebHookController
             'APP_DEBUG' => false,
             'SYMFONY_DOTENV_VARS' => false,
         ]);
+        $rectorProcess->setTimeout(null);
         $rectorProcess->mustRun();
 
         $rectorProcessOutput = Json::decode($rectorProcess->getOutput());
-        $changedFilesPaths = $rectorProcessOutput->changed_files;
         $blobShas = [];
 
         // TODO: decide if something was changed or not
         // TODO: if not, skip committing and creating PR
 
         // 1. Create blobs
-        $blobUrl = str_replace('{/sha}', '', $webhookData->repository->blobs_url);
-
-        foreach ($changedFilesPaths as $index => $changedFilePath) {
-            $blobResponse = $this->client->request('POST', $blobUrl, [
-                RequestOptions::HEADERS => [
-                    'Accept' => 'application/vnd.github.v3+json',
-                    'Authorization' => sprintf('Token %s', $accessToken),
-                    'Content-Type' => 'application/json',
-                ],
-                RequestOptions::BODY => Json::encode([
-                    'content' => file_get_contents($repositoryDirectory . '/' . $changedFilePath),
-                ]),
+        foreach ($rectorProcessOutput->changed_files as $index => $changedFilePath) {
+            $blob = $this->github->gitData()->blobs()->create($username, $repositoryName, [
+                'content' => file_get_contents($repositoryDirectory . '/' . $changedFilePath),
+                'encoding' => 'utf-8',
             ]);
-            $blobResponseData = Json::decode($blobResponse->getBody()->getContents());
-            $blobShas[$changedFilePath] = $blobResponseData->sha;
+
+            $blobShas[$changedFilePath] = $blob['sha'];
         }
 
         // 2. Create tree
-        $originalTreeSha = $webhookData->check_suite->head_commit->tree_id;
-        $treeUrl = str_replace('{/sha}', '', $webhookData->repository->trees_url);
         $tree = [];
-
         foreach ($blobShas as $filePath => $blobSha) {
             $tree[] = [
                 'path' => $filePath,
@@ -174,126 +123,55 @@ final class GitHubWebHookController
             ];
         }
 
-        $treeResponse = $this->client->request('POST', $treeUrl, [
-            RequestOptions::HEADERS => [
-                'Accept' => 'application/vnd.github.v3+json',
-                'Authorization' => sprintf('Token %s', $accessToken),
-                'Content-Type' => 'application/json',
-            ],
-            RequestOptions::BODY => Json::encode([
-                'base_tree' => $originalTreeSha,
-                'tree' => $tree,
-            ]),
+        $tree = $this->github->gitData()->trees()->create($username, $repositoryName, [
+            'base_tree' => $webhookData->check_suite->head_commit->tree_id,
+            'tree' => $tree,
         ]);
-        $treeResponseData = Json::decode($treeResponse->getBody()->getContents());
-        $treeSha = $treeResponseData->sha;
 
         // 3. Create commit
-        $commitUrl = str_replace('{/sha}', '', $webhookData->repository->git_commits_url);
-        $commitResponse = $this->client->request('POST', $commitUrl, [
-            RequestOptions::HEADERS => [
-                'Accept' => 'application/vnd.github.v3+json',
-                'Authorization' => sprintf('Token %s', $accessToken),
-                'Content-Type' => 'application/json',
-            ],
-            RequestOptions::BODY => Json::encode([
-                'message' => 'Rulling the wolrd via Rector!',
-                'parents' => [$originalCommitSha],
-                'tree' => $treeSha,
-            ]),
+        $commit = $this->github->gitData()->commits()->create($username, $repositoryName, [
+            'message' => 'Rulling the wolrd via Rector!',
+            'parents' => [$webhookData->check_suite->head_commit->id],
+            'tree' => $tree['sha'],
         ]);
-        $commitResponseData = Json::decode($commitResponse->getBody()->getContents());
-        $commitSha = $commitResponseData->sha;
 
         // 4. Create reference
-        $referenceUrl = str_replace('{/sha}', '', $webhookData->repository->git_refs_url);
-
-        // TODO: Instead of first trying it would be better to search for it and if not found create it
         try {
-            $this->client->request('POST', $referenceUrl, [
-                RequestOptions::HEADERS => [
-                    'Accept' => 'application/vnd.github.v3+json',
-                    'Authorization' => sprintf('Token %s', $accessToken),
-                    'Content-Type' => 'application/json',
-                ],
-                RequestOptions::BODY => Json::encode([
-                    'ref' => 'refs/heads/' . $newBranch,
-                    'sha' => $commitSha,
-                ]),
+            // TODO: Instead of first trying it would be better to search for it and if not found create it
+            $this->github->gitData()->references()->create($username, $repositoryName, [
+                'ref' => 'refs/heads/' . $newBranch,
+                'sha' => $commit['sha'],
             ]);
         } catch (ClientException $clientException) {
             // Update reference, because it already exists
             if ($clientException->getCode() === 422) {
-                $referenceUrl = str_replace('{/sha}', '/heads/' . $newBranch, $webhookData->repository->git_refs_url);
-
-                $this->client->request('PATCH', $referenceUrl, [
-                    RequestOptions::HEADERS => [
-                        'Accept' => 'application/vnd.github.v3+json',
-                        'Authorization' => sprintf('Token %s', $accessToken),
-                        'Content-Type' => 'application/json',
-                    ],
-                    RequestOptions::BODY => Json::encode([
-                        'force' => true,
-                        'sha' => $commitSha,
-                    ]),
+                $this->github->gitData()->references()->update($username, $repositoryName, 'heads/' . $newBranch, [
+                    'force' => true,
+                    'sha' => $commit['sha'],
                 ]);
             }
         }
 
-        // TODO: What about taking pull requests info from checksuite hook?
+        // @TODO: What about taking pull requests info from checksuite hook?
+        // @TODO: Check if PR exists
 
-        // Check if PR exists
-        $pullsUrl = str_replace('{/number}', '', $webhookData->repository->pulls_url);
-        $existingPullRequestResponse = $this->client->request('GET', "${pullsUrl}?head=${newBranch}", [
-            RequestOptions::HEADERS => [
-                'Accept' => 'application/vnd.github.v3+json',
-                'Authorization' => sprintf('Token %s', $accessToken),
-                'Content-Type' => 'application/json',
-            ],
-        ]);
-        $existingPullRequestResponseData = Json::decode($existingPullRequestResponse->getBody()->getContents());
-
-        // PR does not exist yet
         // 5. Create pull request, it does not exist
         // @TODO: this condition is wrong, probably search does not work properly
-        // if (count($existingPullRequestResponseData) === 0) {
-        $pullRequestResponse = $this->client->request('POST', $pullsUrl, [
-            RequestOptions::HEADERS => [
-                'Accept' => 'application/vnd.github.v3+json',
-                'Authorization' => sprintf('Token %s', $accessToken),
-                'Content-Type' => 'application/json',
-            ],
-            RequestOptions::BODY => Json::encode([
-                'title' => 'Rector - Fix',
-                'head' => $newBranch,
-                'base' => $originalBranch,
-                'body' => 'Automated pull request by Rector',
-            ]),
+        $this->github->pullRequest()->create($username, $repositoryName, [
+            'title' => 'Rector - Fix',
+            'head' => $newBranch,
+            'base' => $originalBranch,
+            'body' => 'Automated pull request by Rector',
         ]);
 
-        $pullRequestResponseData = Json::decode($pullRequestResponse->getBody()->getContents());
-        // }
-
-        // TODO: What if pull request already exists? We will find out :-)
-        // @TODO search for GET /repos/:owner/:repo/pulls?head=$newBranch
-
-        // TODO: check could pass too (count changed files === 0)
-        // Update check
-        /*
-        $checkUrl = $checkCreateResponseData->url;
-        $this->client->request('PATCH', $checkUrl, [
-            RequestOptions::HEADERS => [
-                'Accept' => 'application/vnd.github.antiope-preview+json',
-                'Authorization' => sprintf('Token %s', $accessToken),
-                'Content-Type' => 'application/json',
-            ],
-            RequestOptions::BODY => Json::encode([
-                'conclusion' => 'action_required',
-                'completed_at' => (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
-                'details_url' => $pullRequestResponseData->html_url,
-            ]),
-        ]);
-*/
         return new Response('OK');
+    }
+
+    private function cloneRepository(string $repositoryFullName, string $accessToken, string $repositoryDirectory): void
+    {
+        $cloneUrl = sprintf('https://x-access-token:%s@github.com/%s.git', $accessToken, $repositoryFullName);
+
+        $cloneProcess = new Process(['git', 'clone', $cloneUrl, $repositoryDirectory]);
+        $cloneProcess->mustRun();
     }
 }

@@ -105,9 +105,6 @@
     "fig/link-util": {
         "version": "1.0.0"
     },
-    "firebase/php-jwt": {
-        "version": "v5.0.0"
-    },
     "friendsofphp/php-cs-fixer": {
         "version": "2.2",
         "recipe": {
@@ -155,6 +152,9 @@
         "files": [
             "config/packages/github_api.yaml"
         ]
+    },
+    "lcobucci/jwt": {
+        "version": "3.3.1"
     },
     "monolog/monolog": {
         "version": "1.24.0"
