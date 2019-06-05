@@ -13,34 +13,32 @@
         "php-http/guzzle6-adapter": "^1.1",
         "rector/rector": "dev-master",
         "sensio/framework-extra-bundle": "^5.3",
-        "symfony/asset": "4.2.*",
-        "symfony/console": "4.2.*",
-        "symfony/dotenv": "4.2.*",
-        "symfony/expression-language": "4.2.*",
+        "symfony/asset": "4.3.*",
+        "symfony/console": "4.3.*",
+        "symfony/dotenv": "4.3.*",
+        "symfony/expression-language": "4.3.*",
         "symfony/flex": "^1.1",
-        "symfony/form": "4.2.*",
-        "symfony/framework-bundle": "4.2.*",
+        "symfony/form": "4.3.*",
+        "symfony/framework-bundle": "4.3.*",
         "symfony/monolog-bundle": "^3.1",
         "symfony/orm-pack": "*",
-        "symfony/process": "4.2.*",
-        "symfony/security-bundle": "4.2.*",
+        "symfony/process": "4.3.*",
+        "symfony/security-bundle": "4.3.*",
         "symfony/serializer-pack": "*",
-        "symfony/swiftmailer-bundle": "^3.1",
-        "symfony/translation": "4.2.*",
-        "symfony/twig-bundle": "4.2.*",
-        "symfony/validator": "4.2.*",
-        "symfony/web-link": "4.2.*",
-        "symfony/yaml": "4.2.*"
+        "symfony/translation": "4.3.*",
+        "symfony/twig-bundle": "4.3.*",
+        "symfony/validator": "4.3.*",
+        "symfony/web-link": "4.3.*",
+        "symfony/yaml": "4.3.*"
     },
     "require-dev": {
         "phpunit/phpunit": "^8.1",
         "roave/security-advisories": "dev-master",
-        "symfony/browser-kit": "4.2.*",
+        "symfony/browser-kit": "4.3.*",
         "symfony/debug-pack": "*",
-        "symfony/maker-bundle": "^1.0",
-        "symfony/phpunit-bridge": "4.2.*",
+        "symfony/phpunit-bridge": "4.3.*",
         "symfony/profiler-pack": "*",
-        "symfony/web-server-bundle": "4.2.*",
+        "symfony/web-server-bundle": "4.3.*",
         "symplify/easy-coding-standard": "^6.0"
     },
     "config": {
@@ -87,7 +85,7 @@
     "extra": {
         "symfony": {
             "allow-contrib": false,
-            "require": "4.2.*"
+            "require": "4.3.*"
         }
     }
 }
