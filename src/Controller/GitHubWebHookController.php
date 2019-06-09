@@ -3,6 +3,7 @@
 namespace Rector\RectorCI\Controller;
 
 use Github\Client as Github;
+use Github\Exception\RuntimeException;
 use GuzzleHttp\Exception\ClientException;
 use Nette\Utils\Json;
 use Rector\RectorCI\GitHub\Events\GithubEvent;
@@ -51,7 +52,7 @@ final class GitHubWebHookController
         // @TODO: Check for requested action, ignore others
 
         $originalBranch = $webhookData->check_suite->head_branch;
-        $newBranch = $originalBranch . '-rectified';
+        $newBranch = 'rectified/' . $originalBranch;
         $repositoryFullName = $webhookData->repository->full_name;
         $username = $webhookData->repository->owner->login;
         $repositoryName = $webhookData->repository->name;
@@ -72,7 +73,7 @@ final class GitHubWebHookController
         $gitCheckoutHeadProcess = new Process([
             'git',
             'checkout',
-            sprintf('origin/%s', $originalBranch),
+            $webhookData->check_suite->head_sha,
         ], $repositoryDirectory);
         $gitCheckoutHeadProcess->mustRun();
 
@@ -136,27 +137,29 @@ final class GitHubWebHookController
         ]);
 
         // 4. Create reference
+
         try {
-            // TODO: Instead of first trying it would be better to search for it and if not found create it
+            $this->github->gitData()->references()->show($username, $repositoryName, 'heads/' . $newBranch);
+
+            $this->github->gitData()->references()->update($username, $repositoryName, 'heads/' . $newBranch, [
+                'force' => true,
+                'sha' => $commit['sha'],
+            ]);
+        } catch (RuntimeException $exception) {
+            if ($exception->getCode() !== 404) {
+                throw $exception;
+            }
+
             $this->github->gitData()->references()->create($username, $repositoryName, [
                 'ref' => 'refs/heads/' . $newBranch,
                 'sha' => $commit['sha'],
             ]);
-        } catch (ClientException $clientException) {
-            // Update reference, because it already exists
-            if ($clientException->getCode() === 422) {
-                $this->github->gitData()->references()->update($username, $repositoryName, 'heads/' . $newBranch, [
-                    'force' => true,
-                    'sha' => $commit['sha'],
-                ]);
-            }
         }
 
         // @TODO: What about taking pull requests info from checksuite hook?
         // @TODO: Check if PR exists
 
         // 5. Create pull request, it does not exist
-        // @TODO: this condition is wrong, probably search does not work properly
         $this->github->pullRequest()->create($username, $repositoryName, [
             'title' => 'Rector - Fix',
             'head' => $newBranch,
