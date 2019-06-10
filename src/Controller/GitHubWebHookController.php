@@ -4,7 +4,7 @@ namespace Rector\RectorCI\Controller;
 
 use Github\Client as Github;
 use Github\Exception\RuntimeException;
-use GuzzleHttp\Exception\ClientException;
+use Github\Exception\ValidationFailedException;
 use Nette\Utils\Json;
 use Rector\RectorCI\GitHub\Events\GithubEvent;
 use Rector\RectorCI\GitHub\GithubInstallationAuthenticator;
@@ -156,16 +156,20 @@ final class GitHubWebHookController
             ]);
         }
 
-        // @TODO: What about taking pull requests info from checksuite hook?
-        // @TODO: Check if PR exists
-
         // 5. Create pull request, it does not exist
-        $this->github->pullRequest()->create($username, $repositoryName, [
-            'title' => 'Rector - Fix',
-            'head' => $newBranch,
-            'base' => $originalBranch,
-            'body' => 'Automated pull request by Rector',
-        ]);
+        try {
+            $this->github->pullRequest()->create($username, $repositoryName, [
+                'title' => 'Rector - Fix',
+                'head' => $newBranch,
+                'base' => $originalBranch,
+                'body' => 'Automated pull request by Rector',
+            ]);
+        } catch (ValidationFailedException $exception) {
+            // PR already exists, it is okay
+            if ($exception->getCode() !== 422) {
+                throw $exception;
+            }
+        }
 
         return new Response('OK');
     }
