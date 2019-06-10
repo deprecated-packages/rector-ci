@@ -5,6 +5,8 @@ repositories/*
 vendor/*
 var/*
 
+bin/deploy
+
 .env.local
 .env.*.local
 .gitlab-ci.yml

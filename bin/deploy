@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-cd ..
 docker build -t rector/rector-ci .
-docker push
+docker push rector/rector-ci
 ssh root@rector-ci.org "cd /projects/rector-ci.org && ./run.sh"
