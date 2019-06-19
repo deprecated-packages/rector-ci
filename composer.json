@@ -52,7 +52,10 @@
     },
     "scripts": {
         "check-cs": "vendor/bin/ecs check bin src tests --ansi",
-        "fix-cs": "vendor/bin/ecs check bin src tests --fix --ansi",
+        "fix-cs": [
+            "vendor/bin/ecs check bin src tests --fix --ansi",
+            "vendor/bin/rector process bin src tests --config rector-coding-style.yaml"
+        ],
         "phpstan": "vendor/bin/phpstan analyze bin src tests --error-format symplify --ansi",
         "auto-scripts": {
             "cache:clear": "symfony-cmd",
