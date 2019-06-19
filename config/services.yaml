@@ -9,7 +9,7 @@ services:
 
     Rector\RectorCI\:
         resource: '../src/*'
-        exclude: '../src/{DependencyInjection,Entity,Migrations,Tests,HttpKernel/RectorCIKernel.php}'
+        exclude: '../src/{HttpKernel/RectorCIKernel.php}'
 
     Rector\RectorCI\GitHub\GithubJWTTokenFactory:
         arguments:

@@ -1,6 +1,7 @@
 imports:
     - { resource: 'vendor/symplify/easy-coding-standard/config/set/psr2.yaml' }
     - { resource: 'vendor/symplify/easy-coding-standard/config/set/php71.yaml' }
+    - { resource: 'vendor/symplify/easy-coding-standard/config/set/psr12.yaml' }
     - { resource: 'vendor/symplify/easy-coding-standard/config/set/symplify.yaml' }
     - { resource: 'vendor/symplify/easy-coding-standard/config/set/common.yaml' }
     - { resource: 'vendor/symplify/easy-coding-standard/config/set/clean-code.yaml' }
@@ -10,7 +11,7 @@ services:
     Symplify\CodingStandard\Sniffs\Naming\ClassNameSuffixByParentSniff: ~
 
     Symplify\CodingStandard\Sniffs\CleanCode\CognitiveComplexitySniff:
-        maxCognitiveComplexity: 6
+        maxCognitiveComplexity: 8
 
 parameters:
     exclude_files:
@@ -18,6 +19,10 @@ parameters:
         - 'src/Samples/*'
 
     skip:
+        # from psr12.yaml set
+        PhpCsFixer\Fixer\Operator\UnaryOperatorSpacesFixer: ~
+        PhpCsFixer\Fixer\PhpTag\BlankLineAfterOpeningTagFixer: ~
+
         Symplify\CodingStandard\Sniffs\ControlStructure\SprintfOverContactSniff: ~
 
         SlevomatCodingStandard\Sniffs\Variables\UnusedVariableSniff.UnusedVariable:
