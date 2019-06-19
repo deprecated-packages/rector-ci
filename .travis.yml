@@ -1,0 +1,17 @@
+language: php
+
+matrix:
+    fast_finish: true
+    include:
+        - php: '7.3'
+
+install:
+    - composer update
+
+script:
+    - vendor/bin/phpunit
+    - composer check-cs
+    - composer phpstan
+
+notifications:
+    email: false

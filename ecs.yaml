@@ -9,7 +9,8 @@ services:
     Symplify\CodingStandard\Fixer\Naming\PropertyNameMatchingTypeFixer: ~
     Symplify\CodingStandard\Sniffs\Naming\ClassNameSuffixByParentSniff: ~
 
-    CognitiveComp:
+    Symplify\CodingStandard\Sniffs\CleanCode\CognitiveComplexitySniff:
+        maxCognitiveComplexity: 6
 
 parameters:
     exclude_files:

@@ -37,7 +37,8 @@
         "symfony/phpunit-bridge": "^4.3",
         "symfony/profiler-pack": "*",
         "symfony/web-server-bundle": "^4.3",
-        "symplify/easy-coding-standard": "^6.0"
+        "symplify/easy-coding-standard": "^6.0",
+        "symplify/phpstan-extensions": "^6.0"
     },
     "autoload": {
         "psr-4": {
@@ -52,6 +53,7 @@
     "scripts": {
         "check-cs": "vendor/bin/ecs check bin src tests --ansi",
         "fix-cs": "vendor/bin/ecs check bin src tests --fix --ansi",
+        "phpstan": "vendor/bin/phpstan analyze bin src tests --error-format symplify --ansi",
         "auto-scripts": {
             "cache:clear": "symfony-cmd",
             "assets:install %PUBLIC_DIR%": "symfony-cmd"
