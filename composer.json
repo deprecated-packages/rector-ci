@@ -65,6 +65,9 @@
         "post-update-cmd": "@auto-scripts"
     },
     "config": {
+        "preferred-install": {
+            "*": "dist"
+        },
         "sort-packages": true
     },
     "extra": {

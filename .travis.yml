@@ -1,9 +1,13 @@
 language: php
 
-matrix:
-    fast_finish: true
-    include:
-        - php: '7.3'
+php: '7.3'
+
+before_install:
+    # performance boost
+    # disable xdebug
+    - phpenv config-rm xdebug.ini || echo "xdebug not available"
+    # increase memory for tests
+    - echo "memory_limit=2048M" >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
 
 install:
     - composer update
