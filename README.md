@@ -1,5 +1,7 @@
 # Rector CI
 
+[![Build Status](https://img.shields.io/travis/rectorphp/rector-ci/master.svg?style=flat-square)](https://travis-ci.org/rectorphp/rector-ci)
+
 Automated CI service for [Rector](https://getrector.org).
 
 
