@@ -4,7 +4,6 @@ namespace Rector\RectorCI\Controller;
 
 use Github\Client as Github;
 use Github\Exception\RuntimeException;
-use GuzzleHttp\Exception\ClientException;
 use Nette\Utils\Json;
 use Rector\RectorCI\GitHub\Events\GithubEvent;
 use Rector\RectorCI\GitHub\GithubInstallationAuthenticator;
@@ -43,7 +42,7 @@ final class GitHubWebHookController
             return new Response('Non check_suite event', Response::HTTP_ACCEPTED);
         }
 
-        $webhookData = Json::decode($request->getContent());
+        $webhookData = Json::decode((string) $request->getContent());
 
         if ($webhookData->sender->type === 'Bot') {
             return new Response('Not reacting to commits by bots', Response::HTTP_ACCEPTED);
@@ -145,9 +144,9 @@ final class GitHubWebHookController
                 'force' => true,
                 'sha' => $commit['sha'],
             ]);
-        } catch (RuntimeException $exception) {
-            if ($exception->getCode() !== 404) {
-                throw $exception;
+        } catch (RuntimeException $runtimeException) {
+            if ($runtimeException->getCode() !== 404) {
+                throw $runtimeException;
             }
 
             $this->github->gitData()->references()->create($username, $repositoryName, [
