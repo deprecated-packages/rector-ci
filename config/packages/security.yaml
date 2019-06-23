@@ -1,8 +1,19 @@
 security:
     # https://symfony.com/doc/current/security.html#where-do-users-come-from-user-providers
     providers:
-        in_memory: { memory: ~ }
+        user_db_provider:
+            entity:
+                class: 'Rector\RectorCI\Entity\User'
+                property: apiKey
+
     firewalls:
+        app:
+            pattern: ^/app/
+            guard:
+                authenticators:
+                    - 'Rector\RectorCI\User\Security\GithubTokenAuthenticator'
+            provider: user_db_provider
+
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false

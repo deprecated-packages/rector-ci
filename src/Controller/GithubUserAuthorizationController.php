@@ -2,8 +2,8 @@
 
 namespace Rector\RectorCI\Controller;
 
+use Rector\RectorCI\Exception\GitHub\GitHubAuthorizationException;
 use Rector\RectorCI\GitHub\GithubUserAuthenticator;
-use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -31,7 +31,7 @@ final class GithubUserAuthorizationController extends AbstractController
         // @TODO: state verification
 
         if (! $code) {
-            throw new RuntimeException('Code is missing');
+            throw new GitHubAuthorizationException('Code is missing');
         }
 
         $accessToken = $this->githubUserAuthenticator->getAccessToken($code);
