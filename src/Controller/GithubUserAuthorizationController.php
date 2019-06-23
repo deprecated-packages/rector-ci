@@ -8,7 +8,7 @@ use Symfony\Component\Routing\Annotation\Route;
 final class GithubUserAuthorizationController
 {
     /**
-     * @Route("/authorization/github", methods={"GET"})
+     * @Route("/authorization/github", name="github_autorization", methods={"GET"})
      */
     public function __invoke(): Response
     {
