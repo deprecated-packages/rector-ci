@@ -8,8 +8,10 @@ use Github\Exception\ValidationFailedException;
 use Nette\Utils\Json;
 use Rector\RectorCI\GitHub\Events\GithubEvent;
 use Rector\RectorCI\GitHub\GithubInstallationAuthenticator;
+use Rector\RectorCI\Messenger\PrepareProjectRepositoryCommand;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -25,10 +27,17 @@ final class GitHubWebHookController
      */
     private $github;
 
-    public function __construct(Github $github, GithubInstallationAuthenticator $githubInstallationAuthenticator)
+    /**
+     * @var MessageBusInterface
+     */
+    private $messageBus;
+
+
+    public function __construct(MessageBusInterface $messageBus, Github $github, GithubInstallationAuthenticator $githubInstallationAuthenticator)
     {
         $this->githubInstallationAuthenticator = $githubInstallationAuthenticator;
         $this->github = $github;
+        $this->messageBus = $messageBus;
     }
 
     /**
@@ -49,37 +58,16 @@ final class GitHubWebHookController
             return new Response('Not reacting to commits by bots', Response::HTTP_ACCEPTED);
         }
 
-        // @TODO: Check for requested action, ignore others
-
-        $originalBranch = $webhookData->check_suite->head_branch;
-        $newBranch = 'rectified/' . $originalBranch;
-        $repositoryFullName = $webhookData->repository->full_name;
-        $username = $webhookData->repository->owner->login;
-        $repositoryName = $webhookData->repository->name;
         $accessToken = $this->githubInstallationAuthenticator->authenticate($webhookData->installation->id);
 
-        $repositoryDirectory = __DIR__ . '/../../repositories/' . $repositoryFullName;
+        // @TODO: Check for requested action, ignore others
 
-        if (! file_exists($repositoryDirectory)) {
-            $this->cloneRepository($repositoryFullName, $accessToken, $repositoryDirectory);
-        }
+        // @TODO: create check
 
-        $gitCheckoutChangesProcess = new Process(['git', 'checkout', '-f'], $repositoryDirectory);
-        $gitCheckoutChangesProcess->mustRun();
+        $this->messageBus->dispatch(
+            new PrepareProjectRepositoryCommand()
+        );
 
-        $gitFetchProcess = new Process(['git', 'fetch', '-p'], $repositoryDirectory);
-        $gitFetchProcess->mustRun();
-
-        $gitCheckoutHeadProcess = new Process([
-            'git',
-            'checkout',
-            $webhookData->check_suite->head_sha,
-        ], $repositoryDirectory);
-        $gitCheckoutHeadProcess->mustRun();
-
-        $composerInstallProcess = new Process(['composer', 'install'], $repositoryDirectory);
-        $composerInstallProcess->setTimeout(null);
-        $composerInstallProcess->mustRun();
 
         // @TODO: rector binary?
         // @TODO: case target directory does not have rector.yaml

@@ -25,4 +25,10 @@ final class GithubInstallationAuthenticator
 
         return $accessToken;
     }
+
+
+    public function getAccessToken(): string
+    {
+
+    }
 }
