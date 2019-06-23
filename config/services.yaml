@@ -24,3 +24,8 @@ services:
     Rector\RectorCI\Controller\HomepageController:
         arguments:
             - '%env(GITHUB_APP_CLIENT_ID)%'
+
+    Rector\RectorCI\GitHub\GithubUserAuthenticator:
+        arguments:
+            - '%env(GITHUB_APP_CLIENT_ID)%'
+            - '%env(GITHUB_APP_CLIENT_SECRET)%'
