@@ -164,10 +164,10 @@ final class GitHubWebHookController
                 'base' => $originalBranch,
                 'body' => 'Automated pull request by Rector',
             ]);
-        } catch (ValidationFailedException $exception) {
+        } catch (ValidationFailedException $validationFailedException) {
             // PR already exists, it is okay
-            if ($exception->getCode() !== 422) {
-                throw $exception;
+            if ($validationFailedException->getCode() !== 422) {
+                throw $validationFailedException;
             }
         }
 
