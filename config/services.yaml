@@ -16,6 +16,16 @@ services:
             - '%env(GITHUB_APP_ID)%'
             - '%env(GITHUB_APP_PRIVATE_KEY)%'
 
+
     github.jwt.token:
         class: Lcobucci\JWT\Token
         factory: ['@Rector\RectorCI\GitHub\GithubJWTTokenFactory', 'create']
+
+    Rector\RectorCI\Controller\HomepageController:
+        arguments:
+            - '%env(GITHUB_APP_CLIENT_ID)%'
+
+    Rector\RectorCI\GitHub\GithubUserAuthenticator:
+        arguments:
+            - '%env(GITHUB_APP_CLIENT_ID)%'
+            - '%env(GITHUB_APP_CLIENT_SECRET)%'
