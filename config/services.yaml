@@ -1,6 +1,11 @@
 parameters:
     locale: 'en'
 
+    github:
+        clientId: '%env(GITHUB_APP_CLIENT_ID)%'
+        clientSecret: '%env(GITHUB_APP_CLIENT_SECRET)%'
+        redirectUri: '%env(GITHUB_APP_REDIRECT_URI)%'
+
 services:
     _defaults:
         autowire: true
@@ -25,7 +30,6 @@ services:
         arguments:
             - '%env(GITHUB_APP_CLIENT_ID)%'
 
-    Rector\RectorCI\GitHub\GithubUserAuthenticator:
+    League\OAuth2\Client\Provider\Github:
         arguments:
-            - '%env(GITHUB_APP_CLIENT_ID)%'
-            - '%env(GITHUB_APP_CLIENT_SECRET)%'
+            - '%github%'

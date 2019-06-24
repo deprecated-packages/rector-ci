@@ -156,6 +156,12 @@
     "lcobucci/jwt": {
         "version": "3.3.1"
     },
+    "league/oauth2-client": {
+        "version": "2.4.1"
+    },
+    "league/oauth2-github": {
+        "version": "2.0.0"
+    },
     "monolog/monolog": {
         "version": "1.24.0"
     },
@@ -730,6 +736,9 @@
     },
     "symplify/package-builder": {
         "version": "v5.4.16"
+    },
+    "symplify/phpstan-extensions": {
+        "version": "v6.0.3"
     },
     "theseer/tokenizer": {
         "version": "1.1.2"

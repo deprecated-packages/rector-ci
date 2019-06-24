@@ -2,39 +2,71 @@
 
 namespace Rector\RectorCI\Controller;
 
-use Rector\RectorCI\Exception\GitHub\GitHubAuthorizationException;
-use Rector\RectorCI\GitHub\GithubUserAuthenticator;
+use League\OAuth2\Client\Token\AccessToken;
+use Rector\RectorCI\Exception\GitHub\GitHubAuthenticationException;
+use League\OAuth2\Client\Provider\Github as GithubProvider;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
 final class GithubUserAuthorizationController extends AbstractController
 {
     /**
-     * @var GithubUserAuthenticator
+     * @var string
      */
-    private $githubUserAuthenticator;
+    private const STATE_SESSION_NAME = 'githubOauth2State';
 
-    public function __construct(GithubUserAuthenticator $githubUserAuthenticator)
+    /**
+     * @var GithubProvider
+     */
+    private $githubProvider;
+
+    /**
+     * @var SessionInterface
+     */
+    private $session;
+
+
+    public function __construct(GithubProvider $githubProvider, SessionInterface $session)
     {
-        $this->githubUserAuthenticator = $githubUserAuthenticator;
+        $this->githubProvider = $githubProvider;
+        $this->session = $session;
     }
 
     /**
-     * @Route("/authorization/github", name="github_autorization", methods={"GET"})
+     * @Route("/authorization/github", name="github_authorization", methods={"GET"})
      */
     public function __invoke(Request $request): Response
     {
         $code = $request->query->get('code');
 
-        // @TODO: state verification
+        if (!$code) {
+            $authUrl = $this->githubProvider->getAuthorizationUrl();
+            $this->session->set(self::STATE_SESSION_NAME, $this->githubProvider->getState());
 
-        if (! $code) {
-            throw new GitHubAuthorizationException('Code is missing');
+            return $this->redirect($authUrl);
         }
 
-        $accessToken = $this->githubUserAuthenticator->getAccessToken($code);
+        $state = $request->query->get('state');
+
+        if (!$state || $state !== $this->session->get(self::STATE_SESSION_NAME)) {
+            $this->session->remove(self::STATE_SESSION_NAME);
+
+            throw new GitHubAuthenticationException('Invalid state!');
+        }
+
+        /** @var AccessToken $token */
+        $token = $this->githubProvider->getAccessToken('authorization_code', [
+            'code' => $code,
+        ]);
+
+        $user = $this->githubProvider->getResourceOwner($token);
+        $userId = $user->getId();
+
+        // @TODO: if user Entity does not exist, create him
+        // @TODO: save user id or something to sessions -> make user with his entity logged in
 
         return $this->redirectToRoute('dashboard');
     }

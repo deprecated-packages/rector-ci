@@ -6,6 +6,7 @@
         "ext-iconv": "*",
         "knplabs/github-api": "^2.11",
         "lcobucci/jwt": "^3.3",
+        "league/oauth2-github": "^2.0",
         "nette/utils": "^3.0",
         "php-http/guzzle6-adapter": "^1.1",
         "rector/rector": "dev-master",
