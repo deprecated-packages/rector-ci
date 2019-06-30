@@ -26,7 +26,7 @@ final class DashboardController extends AbstractController
      */
     public function __invoke(): Response
     {
-        $this->github->
+        // $this->github->
 
         return $this->render('dashboard/dashboard.twig');
     }
