@@ -3,78 +3,80 @@
 namespace Rector\RectorCI\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Ramsey\Uuid\UuidInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
- * @ORM\Table
+ * @ORM\Entity()
  */
 final class User implements UserInterface
 {
     /**
      * @ORM\Id
-     * @ORM\Column(type="guid", unique=true)
-     * @ORM\GeneratedValue(strategy="UUID")
+     * @ORM\Column(type="uuid", unique=true)
      */
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=64, unique=true))
+     * @ORM\Column(type="integer", unique=true)
+     * @var string
      */
-    private $apiKey;
-
-    public function getRoles(): array
-    {
-        return ['ROLE_API'];
-    }
-
-    public function getId(): int
-    {
-        return $this->id;
-    }
-
-    public function getApiKey()
-    {
-        return $this->apiKey;
-    }
-
-    // methods required by UserInterface, but not really used
+    private $githubUserId;
 
     /**
-     * Returns the password used to authenticate the user.
-     *
-     * This should be the encoded password. On authentication, a plain-text
-     * password will be salted, encoded, and then compared to this value.
+     * @ORM\Column(type="string", nullable=true)
+     * @var string
      */
+    private $githubAccessToken;
+
+
+    public function __construct(UuidInterface $id, int $githubUserId)
+    {
+        $this->id = $id;
+        $this->githubUserId = $githubUserId;
+    }
+
+
+    public function updateGithubAccessToken(string $githubAccessToken): void
+    {
+        $this->githubAccessToken = $githubAccessToken;
+    }
+
+
+    /**
+     * @return string[]
+     */
+    public function getRoles(): array
+    {
+        return ['ROLE_USER'];
+    }
+
+
     public function getPassword(): string
     {
         return '';
     }
 
-    /**
-     * Returns the salt that was originally used to encode the password.
-     *
-     * This can return null if the password was not encoded using a salt.
-     */
+
     public function getSalt(): ?string
     {
         return null;
     }
 
-    /**
-     * Returns the username used to authenticate the user.
-     */
+
     public function getUsername(): string
     {
-        return '';
+        return $this->id->toString();
     }
 
-    /**
-     * Removes sensitive data from the user.
-     *
-     * This is important if, at any given point, sensitive information like
-     * the plain-text password is stored on this object.
-     */
+
     public function eraseCredentials(): void
     {
+    }
+
+
+    public function getGithubAccessToken(): string
+    {
+        return $this->githubAccessToken;
     }
 }

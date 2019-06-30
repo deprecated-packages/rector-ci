@@ -1,1 +1,11 @@
-Hello user!
+{% extends 'base.twig' %}
+
+{% block body %}
+    Hello user!
+
+    {% if is_granted('ROLE_BETA_TESTER') %}
+        - List of repositories
+    {% else %}
+        <p>You do not have access to private beta testing. Please contact us on honza@getrector.org</p>
+    {% endif %}
+{% endblock %}

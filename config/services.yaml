@@ -14,7 +14,7 @@ services:
 
     Rector\RectorCI\:
         resource: '../src/*'
-        exclude: '../src/{HttpKernel/RectorCIKernel.php}'
+        exclude: '../src/{HttpKernel/RectorCIKernel.php,Entity,**/Exceptions}'
 
     Rector\RectorCI\GitHub\GithubJWTTokenFactory:
         arguments:
