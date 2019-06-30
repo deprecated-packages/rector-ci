@@ -4,6 +4,7 @@ namespace Rector\RectorCI\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\UuidInterface;
+use Rector\RectorCI\User\Security\UserRole;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
@@ -29,11 +30,18 @@ final class User implements UserInterface
      */
     private $githubAccessToken;
 
+    /**
+     * @ORM\Column(type="boolean")
+     * @var boolean
+     */
+    private $isBetaTester;
+
 
     public function __construct(UuidInterface $id, int $githubUserId)
     {
         $this->id = $id;
         $this->githubUserId = $githubUserId;
+        $this->isBetaTester = false;
     }
 
 
@@ -48,7 +56,13 @@ final class User implements UserInterface
      */
     public function getRoles(): array
     {
-        return ['ROLE_USER'];
+        $roles = [UserRole::USER];
+
+        if ($this->isBetaTester) {
+            $roles[] = UserRole::BETA_TESTER;
+        }
+
+        return $roles;
     }
 
 

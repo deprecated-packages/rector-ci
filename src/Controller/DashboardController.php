@@ -40,15 +40,8 @@ final class DashboardController extends AbstractController
         $this->github->authenticate($user->getGithubAccessToken(), null, Github::AUTH_HTTP_TOKEN);
         $this->github->addCache($this->cacheItemPool);
 
-        $userInstallations = $this->github->currentUser()->installations();
-        $installedRepositories = [];
-
-        foreach ($userInstallations['installations'] as $installation) {
-            $repositoriesByInstallation = $this->github->currentUser()->repositoriesByInstallation($installation['id']);
-            $installedRepositories = array_merge($installedRepositories, $repositoriesByInstallation['repositories']);
-        }
-
         $repositories = $this->github->currentUser()->repositories();
+        $installedRepositories = $this->getInstalledRepositories();
 
         $repositories = array_filter($repositories, static function(array $repository) use ($installedRepositories) {
             foreach ($installedRepositories as $installedRepository) {
@@ -64,5 +57,19 @@ final class DashboardController extends AbstractController
             'installedRepositories' => $installedRepositories,
             'repositories' => $repositories,
         ]);
+    }
+
+
+    private function getInstalledRepositories(): array
+    {
+        $userInstallations = $this->github->currentUser()->installations();
+        $installedRepositories = [];
+
+        foreach ($userInstallations['installations'] as $installation) {
+            $repositoriesByInstallation = $this->github->currentUser()->repositoriesByInstallation($installation['id']);
+            $installedRepositories = array_merge($installedRepositories, $repositoriesByInstallation['repositories']);
+        }
+
+        return $installedRepositories;
     }
 }
