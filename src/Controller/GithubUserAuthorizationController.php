@@ -89,8 +89,8 @@ final class GithubUserAuthorizationController extends AbstractController
 
         $state = $request->query->get('state');
 
-        if (!$state || $state !== $this->session->get(self::STATE_SESSION_NAME)) {
-            $this->session->remove(self::STATE_SESSION_NAME);
+        if ($this->session->has(self::STATE_SESSION_NAME) && $state !== $this->session->get(self::STATE_SESSION_NAME)) {
+            $this->clearState();
 
             throw new GitHubAuthenticationException('Invalid state!');
         }
@@ -113,6 +113,8 @@ final class GithubUserAuthorizationController extends AbstractController
 
         $this->entityManager->flush();
 
+        $this->clearState();
+
         $this->guardAuthenticatorHandler->authenticateUserAndHandleSuccess(
             $user,
             $request,
@@ -134,5 +136,11 @@ final class GithubUserAuthorizationController extends AbstractController
         $this->entityManager->persist($user);
 
         return $user;
+    }
+
+
+    private function clearState(): void
+    {
+        $this->session->remove(self::STATE_SESSION_NAME);
     }
 }

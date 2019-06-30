@@ -3,6 +3,8 @@
 namespace Rector\RectorCI\Controller;
 
 use Github\Client as Github;
+use Psr\Cache\CacheItemPoolInterface;
+use Rector\RectorCI\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -14,10 +16,16 @@ final class DashboardController extends AbstractController
      */
     private $github;
 
+    /**
+     * @var CacheItemPoolInterface
+     */
+    private $cacheItemPool;
 
-    public function __construct(Github $github)
+
+    public function __construct(Github $github, CacheItemPoolInterface $cacheItemPool)
     {
         $this->github = $github;
+        $this->cacheItemPool = $cacheItemPool;
     }
 
 
@@ -26,8 +34,42 @@ final class DashboardController extends AbstractController
      */
     public function __invoke(): Response
     {
-        // $this->github->
+        /** @var User $user */
+        $user = $this->getUser();
 
-        return $this->render('dashboard/dashboard.twig');
+        $this->github->authenticate($user->getGithubAccessToken(), null, Github::AUTH_HTTP_TOKEN);
+        $this->github->addCache($this->cacheItemPool);
+
+        $repositories = $this->github->currentUser()->repositories();
+        $installedRepositories = $this->getInstalledRepositories();
+
+        $repositories = array_filter($repositories, static function(array $repository) use ($installedRepositories) {
+            foreach ($installedRepositories as $installedRepository) {
+                if ($installedRepository['id'] === $repository['id']) {
+                    return false;
+                }
+            }
+
+           return true;
+        });
+
+        return $this->render('dashboard/dashboard.twig', [
+            'installedRepositories' => $installedRepositories,
+            'repositories' => $repositories,
+        ]);
+    }
+
+
+    private function getInstalledRepositories(): array
+    {
+        $userInstallations = $this->github->currentUser()->installations();
+        $installedRepositories = [];
+
+        foreach ($userInstallations['installations'] as $installation) {
+            $repositoriesByInstallation = $this->github->currentUser()->repositoriesByInstallation($installation['id']);
+            $installedRepositories = array_merge($installedRepositories, $repositoriesByInstallation['repositories']);
+        }
+
+        return $installedRepositories;
     }
 }

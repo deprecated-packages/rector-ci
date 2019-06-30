@@ -3,9 +3,20 @@
 {% block body %}
     Hello user!
 
-    {% if is_granted('ROLE_BETA_TESTER') %}
-        - List of repositories
+    {% if is_granted(constant('Rector\\RectorCI\\User\\Security\\UserRole::BETA_TESTER')) %}
+        {% for repository in installedRepositories %}
+            <p>
+                {{ repository.full_name }} (installed) <button>Detail</button> - 0 sets
+            </p>
+        {% endfor %}
+
+        {% for repository in repositories %}
+            <p>
+                {{ repository.full_name }} <button>install</button> - 0 sets
+            </p>
+        {% endfor %}
     {% else %}
         <p>You do not have access to private beta testing. Please contact us on honza@getrector.org</p>
     {% endif %}
+
 {% endblock %}
