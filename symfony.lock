@@ -1,4 +1,34 @@
 {
+    "cache/adapter-bundle": {
+        "version": "1.1",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "master",
+            "version": "1.1",
+            "ref": "d6a6e45b7f0f84bde524532d9118bab1f40fe33a"
+        },
+        "files": [
+            "config/packages/cache_adapter.yaml"
+        ]
+    },
+    "cache/adapter-common": {
+        "version": "1.1.0"
+    },
+    "cache/array-adapter": {
+        "version": "1.0.1"
+    },
+    "cache/filesystem-adapter": {
+        "version": "1.0.0"
+    },
+    "cache/hierarchical-cache": {
+        "version": "1.0.0"
+    },
+    "cache/namespaced-cache": {
+        "version": "1.0.0"
+    },
+    "cache/tag-interop": {
+        "version": "1.0.0"
+    },
     "clue/stream-filter": {
         "version": "v1.4.1"
     },
@@ -155,6 +185,22 @@
     },
     "lcobucci/jwt": {
         "version": "3.3.1"
+    },
+    "league/flysystem": {
+        "version": "1.0.53"
+    },
+    "league/flysystem-bundle": {
+        "version": "1.0",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "master",
+            "version": "1.0",
+            "ref": "8ad3ded1f39fedce098e43259741f42092a1010e"
+        },
+        "files": [
+            "config/packages/flysystem.yaml",
+            "var/storage/.gitignore"
+        ]
     },
     "league/oauth2-client": {
         "version": "2.4.1"

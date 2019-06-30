@@ -3,6 +3,18 @@
 {% block body %}
     Hello user!
 
+    {% for repository in installedRepositories %}
+        <p>
+            {{ repository.full_name }} (installed) <button>Detail</button>
+        </p>
+    {% endfor %}
+
+    {% for repository in repositories %}
+        <p>
+            {{ repository.full_name }} <button>install</button>
+        </p>
+    {% endfor %}
+
     {% if is_granted('ROLE_BETA_TESTER') %}
         - List of repositories
     {% else %}
