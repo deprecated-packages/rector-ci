@@ -13,12 +13,10 @@ final class HomepageController extends AbstractController
      */
     private $clientId;
 
-
     public function __construct(string $clientId)
     {
         $this->clientId = $clientId;
     }
-
 
     /**
      * @Route("/", methods={"GET"})

@@ -7,5 +7,5 @@
 
     <p>For more informations about Rector itself or to apply for Rector CI, please visit <a href="https://getrector.org">getrector.org</a> or contact me directly at <a href="mailto:honza@getrector.org">honza@getrector.org</a>.</p>
 
-    <a href="https://github.com/login/oauth/authorize?client_id={{ githubClientId }}&redirect_uri={{ url('github_autorization') }}">Sign with Github</a>
+    <a href="{{ path('github_authorization') }}">Sign with Github</a>
 {% endblock %}
