@@ -3,6 +3,7 @@
 namespace Rector\RectorCI\Controller;
 
 use Github\Client as Github;
+use Github\ResultPager;
 use Psr\Cache\CacheItemPoolInterface;
 use Rector\RectorCI\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -40,8 +41,10 @@ final class DashboardController extends AbstractController
         $this->github->authenticate($user->getGithubAccessToken(), null, Github::AUTH_HTTP_TOKEN);
         $this->github->addCache($this->cacheItemPool);
 
-        $repositories = $this->github->currentUser()->repositories();
         $installedRepositories = $this->getInstalledRepositories();
+
+        $pager = new ResultPager($this->github);
+        $repositories = $pager->fetchAll($this->github->currentUser(), 'repositories', ['all']);
 
         $repositories = array_filter($repositories, static function(array $repository) use ($installedRepositories) {
             foreach ($installedRepositories as $installedRepository) {

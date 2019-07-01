@@ -20,7 +20,7 @@ final class User implements UserInterface
 
     /**
      * @ORM\Column(type="integer", unique=true)
-     * @var string
+     * @var int
      */
     private $githubUserId;
 
@@ -92,5 +92,11 @@ final class User implements UserInterface
     public function getGithubAccessToken(): string
     {
         return $this->githubAccessToken;
+    }
+
+
+    public function getGithubUserId(): int
+    {
+        return $this->githubUserId;
     }
 }

@@ -24,8 +24,8 @@ final class UserRepository
         return (bool) $this->entityManager->createQueryBuilder()
             ->from(User::class, 'user')
             ->select('COUNT(user)')
-            ->where('user.githubUserId = :githubUserId')
-            ->setParameter('githubUserId', $githubUserId)
+            ->where('user.getGithubUserId = :getGithubUserId')
+            ->setParameter('getGithubUserId', $githubUserId)
             ->getQuery()
             ->getSingleScalarResult();
     }
@@ -43,8 +43,8 @@ final class UserRepository
         return $this->entityManager->createQueryBuilder()
             ->from(User::class, 'user')
             ->select('user')
-            ->where('user.githubUserId = :githubUserId')
-            ->setParameter('githubUserId', $githubUserId)
+            ->where('user.getGithubUserId = :getGithubUserId')
+            ->setParameter('getGithubUserId', $githubUserId)
             ->getQuery()
             ->getSingleResult();
     }

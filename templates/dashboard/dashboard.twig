@@ -6,13 +6,13 @@
     {% if is_granted(constant('Rector\\RectorCI\\User\\Security\\UserRole::BETA_TESTER')) %}
         {% for repository in installedRepositories %}
             <p>
-                {{ repository.full_name }} (installed) <button>Detail</button> - 0 sets
+                {{ repository.full_name }} (installed) <a href="{{ path('github_repository') }}">Detail</a> - 0 sets
             </p>
         {% endfor %}
 
         {% for repository in repositories %}
             <p>
-                {{ repository.full_name }} <button>install</button> - 0 sets
+                {{ repository.full_name }} <a href="https://github.com/apps/rector-ci/installations/new/permissions?target_id={{ repository.owner.id }}">install rector ci</a> - 0 sets
             </p>
         {% endfor %}
     {% else %}
