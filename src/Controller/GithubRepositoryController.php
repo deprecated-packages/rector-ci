@@ -13,6 +13,19 @@ final class GithubRepositoryController extends AbstractController
      */
     public function __invoke(): Response
     {
-        return $this->render('githubRepository/githubRepository.twig');
+        $sets = [];
+
+        for ($i=0 ; $i<=10 ; $i++) {
+            $sets[] = [
+                'id' => 'set' . $i,
+                'name' => 'My set ' . $i,
+                'description' => 'Lorem ipsum dolor sit amet',
+                'isActivated' => $i%3 === 0,
+            ];
+        }
+
+        return $this->render('githubRepository/githubRepository.twig', [
+            'sets' => $sets,
+        ]);
     }
 }

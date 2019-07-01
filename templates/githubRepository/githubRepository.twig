@@ -1,0 +1,28 @@
+{% extends 'loggedIn.twig' %}
+
+{% block body %}
+    <table>
+        <thead>
+            <tr>
+                <th>Set</th>
+                <th>Description</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for set in sets %}
+                <tr>
+                    <td>{{ set.name }}</td>
+                    <td>{{ set.description }}</td>
+                    <td>
+                        {% if set.isActivated %}
+                            <a href="#">Deactivate</a>
+                        {% else %}
+                            <a href="#">Activate</a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
