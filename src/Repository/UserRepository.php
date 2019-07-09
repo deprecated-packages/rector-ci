@@ -1,4 +1,4 @@
-<?php declare (strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Rector\RectorCI\Repository;
 
@@ -12,7 +12,6 @@ final class UserRepository
      * @var EntityManagerInterface
      */
     private $entityManager;
-
 
     public function __construct(EntityManagerInterface $entityManager)
     {
@@ -30,13 +29,12 @@ final class UserRepository
             ->getSingleScalarResult();
     }
 
-
     /**
      * @throws UserNotFoundException
      */
     public function getUserByGithubId(int $githubUserId): User
     {
-        if (!$this->userWithGithubIdExists($githubUserId)) {
+        if (! $this->userWithGithubIdExists($githubUserId)) {
             throw new UserNotFoundException();
         }
 

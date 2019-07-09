@@ -23,8 +23,23 @@ parameters:
         PhpCsFixer\Fixer\Operator\UnaryOperatorSpacesFixer: ~
         PhpCsFixer\Fixer\PhpTag\BlankLineAfterOpeningTagFixer: ~
 
+        # JM: I found this useless, full of false positives (needs a lot of configuration, for each entity etc)
+        Symplify\CodingStandard\Sniffs\DependencyInjection\NoClassInstantiationSniff: ~
+
         Symplify\CodingStandard\Sniffs\ControlStructure\SprintfOverContactSniff: ~
 
         SlevomatCodingStandard\Sniffs\Variables\UnusedVariableSniff.UnusedVariable:
             # work in progress - remove later
             - 'src/Controller/GitHubWebHookController.php'
+
+        SlevomatCodingStandard\Sniffs\Classes\UnusedPrivateElementsSniff.WriteOnlyProperty:
+            # This is okay for entities, it might happen especially for IDs
+            - 'src/Entity/*'
+
+        Symplify\CodingStandard\Sniffs\CleanCode\ForbiddenStaticFunctionSniff:
+            # Group data fixtures has static getGroups() method by it's interface
+            - 'src/DataFixtures/*'
+
+        Symplify\CodingStandard\Fixer\Naming\PropertyNameMatchingTypeFixer:
+            # This can cause for troubles for entities, etc renaming id -> uuid
+            - 'src/Entity/*'

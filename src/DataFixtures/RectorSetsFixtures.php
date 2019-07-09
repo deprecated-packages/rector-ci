@@ -10,22 +10,20 @@ use Rector\RectorCI\Entity\RectorSet;
 
 final class RectorSetsFixtures extends Fixture implements FixtureGroupInterface
 {
-    public function load(ObjectManager $manager): void
+    public function load(ObjectManager $objectManager): void
     {
-        for ($i=0; $i<=10; $i++) {
-            $set = new RectorSet(
-                Uuid::uuid4(),
-                'set-' . $i,
-                'Set #' . ($i+1)
-            );
+        for ($i = 0; $i <= 10; $i++) {
+            $set = new RectorSet(Uuid::uuid4(), 'set-' . $i, 'Set #' . ($i + 1));
 
-            $manager->persist($set);
+            $objectManager->persist($set);
         }
 
-        $manager->flush();
+        $objectManager->flush();
     }
 
-
+    /**
+     * @return string[]
+     */
     public static function getGroups(): array
     {
         return [FixtureGroupName::BASE_DATA];

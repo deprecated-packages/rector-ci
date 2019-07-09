@@ -2,7 +2,8 @@
 
 namespace Rector\RectorCI\RectorSet\Exception;
 
-final class RectorSetNotActiveException extends \LogicException
-{
+use LogicException;
 
+final class RectorSetNotActiveException extends LogicException
+{
 }

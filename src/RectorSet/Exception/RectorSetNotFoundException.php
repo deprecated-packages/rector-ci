@@ -2,7 +2,8 @@
 
 namespace Rector\RectorCI\RectorSet\Exception;
 
-final class RectorSetNotFoundException extends \RuntimeException
-{
+use RuntimeException;
 
+final class RectorSetNotFoundException extends RuntimeException
+{
 }

@@ -15,12 +15,10 @@ final class RectorSetActivationRepository
      */
     private $entityManager;
 
-
     public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
     }
-
 
     public function doesActivationExist(UuidInterface $githubGitRepositoryId, UuidInterface $rectorSetId): bool
     {
@@ -35,12 +33,13 @@ final class RectorSetActivationRepository
             ->getSingleScalarResult();
     }
 
-
     /**
      * @throws RectorSetNotActiveException
      */
-    public function getRectorSetActivationForRepository(UuidInterface $rectorSetId, UuidInterface $githubGitRepositoryId): RectorSetActivation
-    {
+    public function getRectorSetActivationForRepository(
+        UuidInterface $rectorSetId,
+        UuidInterface $githubGitRepositoryId
+    ): RectorSetActivation {
         try {
             return $this->entityManager->createQueryBuilder()
                 ->from(RectorSetActivation::class, 'activation')
@@ -51,7 +50,7 @@ final class RectorSetActivationRepository
                 ->setParameter('rectorSet', $rectorSetId)
                 ->getQuery()
                 ->getSingleResult();
-        } catch (NoResultException $exception) {
+        } catch (NoResultException $noResultException) {
             throw new RectorSetNotActiveException();
         }
     }

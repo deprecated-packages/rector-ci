@@ -2,10 +2,12 @@
 
 namespace Rector\RectorCI\DateTime;
 
+use DateTimeImmutable;
+
 final class DateTimeProvider
 {
-    public function provideNow(): \DateTimeImmutable
+    public function provideNow(): DateTimeImmutable
     {
-        return new \DateTimeImmutable();
+        return new DateTimeImmutable();
     }
 }

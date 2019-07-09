@@ -14,12 +14,10 @@ final class RectorSetRepository
      */
     private $entityManager;
 
-
     public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
     }
-
 
     /**
      * @return RectorSet[]
@@ -34,7 +32,6 @@ final class RectorSetRepository
             ->getResult();
     }
 
-
     /**
      * @throws RectorSetNotFoundException
      */
@@ -48,7 +45,7 @@ final class RectorSetRepository
                 ->setParameter('name', $name)
                 ->getQuery()
                 ->getSingleResult();
-        } catch (NoResultException $exception) {
+        } catch (NoResultException $noResultException) {
             throw new RectorSetNotFoundException();
         }
     }

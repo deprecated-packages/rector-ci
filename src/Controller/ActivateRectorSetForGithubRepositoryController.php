@@ -29,18 +29,15 @@ final class ActivateRectorSetForGithubRepositoryController extends AbstractContr
      */
     private $githubGitRepositoryRepository;
 
-
     public function __construct(
         RectorSetActivator $rectorSetActivator,
         RectorSetRepository $rectorSetRepository,
         GithubGitRepositoryRepository $githubGitRepositoryRepository
-    )
-    {
+    ) {
         $this->rectorSetActivator = $rectorSetActivator;
         $this->rectorSetRepository = $rectorSetRepository;
         $this->githubGitRepositoryRepository = $githubGitRepositoryRepository;
     }
-
 
     /**
      * @Route("/app/repository/github/{githubRepositoryId}/activate/{rectorSetName}", name="activate_set_github", methods={"GET"})
@@ -55,14 +52,14 @@ final class ActivateRectorSetForGithubRepositoryController extends AbstractContr
             $githubRepository = $this->githubGitRepositoryRepository->getByGithubRepositoryId($githubRepositoryId);
 
             $this->rectorSetActivator->activateSetForRepository($rectorSet, $githubRepository);
-        } catch (RectorSetNotFoundException $exception) {
+        } catch (RectorSetNotFoundException $rectorSetNotFoundException) {
             throw $this->createNotFoundException();
-        } catch (RectorSetAlreadyActivatedException $exception) {
+        } catch (RectorSetAlreadyActivatedException $rectorSetAlreadyActivatedException) {
             // .. Do nothing .. maybe we should show flash to user?
         }
 
         return $this->redirectToRoute('github_repository', [
-           'githubRepositoryId' => $githubRepositoryId,
+            'githubRepositoryId' => $githubRepositoryId,
         ]);
     }
 }

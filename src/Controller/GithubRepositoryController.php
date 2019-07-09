@@ -1,4 +1,4 @@
-<?php declare (strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Rector\RectorCI\Controller;
 
@@ -27,13 +27,11 @@ final class GithubRepositoryController extends AbstractController
      */
     private $rectorSetActivationChecker;
 
-
     public function __construct(
         RectorSetRepository $rectorSetRepository,
         GithubGitRepositoryRepository $githubGitRepositoryRepository,
         RectorSetActivationChecker $rectorSetActivationChecker
-    )
-    {
+    ) {
         $this->rectorSetRepository = $rectorSetRepository;
         $this->githubGitRepositoryRepository = $githubGitRepositoryRepository;
         $this->rectorSetActivationChecker = $rectorSetActivationChecker;

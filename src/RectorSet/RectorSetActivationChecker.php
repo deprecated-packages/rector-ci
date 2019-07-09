@@ -13,15 +13,16 @@ final class RectorSetActivationChecker
      */
     private $rectorSetActivationRepository;
 
-
     public function __construct(RectorSetActivationRepository $rectorSetActivationRepository)
     {
         $this->rectorSetActivationRepository = $rectorSetActivationRepository;
     }
 
-
-    public function isSetActiveForRepository(RectorSet $set, GithubGitRepository $gitRepository): bool
+    public function isSetActiveForRepository(RectorSet $rectorSet, GithubGitRepository $githubGitRepository): bool
     {
-        return $this->rectorSetActivationRepository->doesActivationExist($gitRepository->getId(), $set->getId());
+        return $this->rectorSetActivationRepository->doesActivationExist(
+            $githubGitRepository->getId(),
+            $rectorSet->getId()
+        );
     }
 }

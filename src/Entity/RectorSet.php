@@ -1,4 +1,4 @@
-<?php declare (strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Rector\RectorCI\Entity;
 
@@ -11,11 +11,10 @@ use Ramsey\Uuid\UuidInterface;
 class RectorSet
 {
     /**
-     * @var UuidInterface
-     * @ORM\Id()
-     * @ORM\Column(type="uuid")
+     * @var string
+     * @ORM\Column()
      */
-    private $id;
+    private $title;
 
     /**
      * @var string
@@ -24,35 +23,28 @@ class RectorSet
     private $name;
 
     /**
-     * @var string
-     * @ORM\Column()
+     * @var UuidInterface
+     * @ORM\Id()
+     * @ORM\Column(type="uuid")
      */
-    private $title;
+    private $id;
 
-
-    public function __construct(
-        UuidInterface $id,
-        string $name,
-        string $title
-    )
+    public function __construct(UuidInterface $id, string $name, string $title)
     {
         $this->id = $id;
         $this->name = $name;
         $this->title = $title;
     }
 
-
     public function getId(): UuidInterface
     {
         return $this->id;
     }
 
-
     public function getName(): string
     {
         return $this->name;
     }
-
 
     public function getTitle(): string
     {

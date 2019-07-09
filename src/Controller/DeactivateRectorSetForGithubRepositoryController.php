@@ -29,18 +29,15 @@ final class DeactivateRectorSetForGithubRepositoryController extends AbstractCon
      */
     private $rectorSetDeactivator;
 
-
     public function __construct(
         RectorSetDeactivator $rectorSetDeactivator,
         RectorSetRepository $rectorSetRepository,
         GithubGitRepositoryRepository $githubGitRepositoryRepository
-    )
-    {
+    ) {
         $this->rectorSetRepository = $rectorSetRepository;
         $this->githubGitRepositoryRepository = $githubGitRepositoryRepository;
         $this->rectorSetDeactivator = $rectorSetDeactivator;
     }
-
 
     /**
      * @Route("/app/repository/github/{githubRepositoryId}/deactivate/{rectorSetName}", name="deactivate_set_github", methods={"GET"})
@@ -55,9 +52,9 @@ final class DeactivateRectorSetForGithubRepositoryController extends AbstractCon
             $githubRepository = $this->githubGitRepositoryRepository->getByGithubRepositoryId($githubRepositoryId);
 
             $this->rectorSetDeactivator->deactivateSetForRepository($rectorSet, $githubRepository);
-        } catch (RectorSetNotFoundException $exception) {
+        } catch (RectorSetNotFoundException $rectorSetNotFoundException) {
             throw $this->createNotFoundException();
-        } catch (RectorSetNotActiveException $exception) {
+        } catch (RectorSetNotActiveException $rectorSetNotActiveException) {
             // .. Do nothing .. maybe we should show flash to user?
         }
 

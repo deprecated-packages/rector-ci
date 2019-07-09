@@ -20,25 +20,22 @@ final class RectorSetDeactivator
      */
     private $rectorSetActivationRepository;
 
-
     public function __construct(
         EntityManagerInterface $entityManager,
         RectorSetActivationRepository $rectorSetActivationRepository
-    )
-    {
+    ) {
         $this->entityManager = $entityManager;
         $this->rectorSetActivationRepository = $rectorSetActivationRepository;
     }
 
-
     /**
      * @throws RectorSetNotActiveException
      */
-    public function deactivateSetForRepository(RectorSet $rectorSet, GithubGitRepository $gitRepository): void
+    public function deactivateSetForRepository(RectorSet $rectorSet, GithubGitRepository $githubGitRepository): void
     {
         $activation = $this->rectorSetActivationRepository->getRectorSetActivationForRepository(
             $rectorSet->getId(),
-            $gitRepository->getId()
+            $githubGitRepository->getId()
         );
 
         $this->entityManager->remove($activation);

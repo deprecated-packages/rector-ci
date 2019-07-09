@@ -26,33 +26,26 @@ final class RectorSetActivator
      */
     private $dateTimeProvider;
 
-
     public function __construct(
         EntityManagerInterface $entityManager,
         RectorSetActivationChecker $rectorSetActivationChecker,
         DateTimeProvider $dateTimeProvider
-    )
-    {
+    ) {
         $this->entityManager = $entityManager;
         $this->rectorSetActivationChecker = $rectorSetActivationChecker;
         $this->dateTimeProvider = $dateTimeProvider;
     }
 
-
     /**
      * @throws RectorSetAlreadyActivatedException
      */
-    public function activateSetForRepository(RectorSet $rectorSet, GithubGitRepository $gitRepository): void
+    public function activateSetForRepository(RectorSet $rectorSet, GithubGitRepository $githubGitRepository): void
     {
-        if ($this->rectorSetActivationChecker->isSetActiveForRepository($rectorSet, $gitRepository)) {
+        if ($this->rectorSetActivationChecker->isSetActiveForRepository($rectorSet, $githubGitRepository)) {
             throw new RectorSetAlreadyActivatedException();
         }
 
-        $activation = new RectorSetActivation(
-            $gitRepository,
-            $rectorSet,
-            $this->dateTimeProvider->provideNow(),
-        );
+        $activation = new RectorSetActivation($githubGitRepository, $rectorSet, $this->dateTimeProvider->provideNow(), );
 
         $this->entityManager->persist($activation);
         $this->entityManager->flush();

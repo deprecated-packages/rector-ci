@@ -19,25 +19,23 @@ final class GithubGitRepositoryRepository
      */
     private $identityProvider;
 
-
     public function __construct(IdentityProvider $identityProvider, EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
         $this->identityProvider = $identityProvider;
     }
 
-
     public function getByGithubRepositoryId(int $githubRepositoryId): GithubGitRepository
     {
         try {
-            $repository =$this->entityManager->createQueryBuilder()
+            $repository = $this->entityManager->createQueryBuilder()
                 ->from(GithubGitRepository::class, 'repository')
                 ->select('repository')
                 ->where('repository.githubRepositoryId = :githubRepositoryId')
                 ->setParameter('githubRepositoryId', $githubRepositoryId)
                 ->getQuery()
                 ->getSingleResult();
-        } catch (NoResultException $exception) {
+        } catch (NoResultException $noResultException) {
             $repository = new GithubGitRepository($this->identityProvider->provide(), $githubRepositoryId);
 
             $this->entityManager->persist($repository);

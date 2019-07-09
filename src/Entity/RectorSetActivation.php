@@ -2,6 +2,7 @@
 
 namespace Rector\RectorCI\Entity;
 
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -24,18 +25,16 @@ class RectorSetActivation
     private $rectorSet;
 
     /**
-     * @var \DateTimeImmutable
+     * @var DateTimeImmutable
      * @ORM\Column(type="datetime_immutable")
      */
     private $activatedAt;
 
-
     public function __construct(
         GithubGitRepository $githubGitRepository,
         RectorSet $rectorSet,
-        \DateTimeImmutable $activatedAt
-    )
-    {
+        DateTimeImmutable $activatedAt
+    ) {
         $this->githubGitRepository = $githubGitRepository;
         $this->rectorSet = $rectorSet;
         $this->activatedAt = $activatedAt;

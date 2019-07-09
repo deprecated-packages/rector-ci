@@ -22,13 +22,11 @@ final class DashboardController extends AbstractController
      */
     private $cacheItemPool;
 
-
     public function __construct(Github $github, CacheItemPoolInterface $cacheItemPool)
     {
         $this->github = $github;
         $this->cacheItemPool = $cacheItemPool;
     }
-
 
     /**
      * @Route("/app/dashboard", name="dashboard", methods={"GET"})
@@ -46,14 +44,16 @@ final class DashboardController extends AbstractController
         $pager = new ResultPager($this->github);
         $repositories = $pager->fetchAll($this->github->currentUser(), 'repositories', ['all']);
 
-        $repositories = array_filter($repositories, static function(array $repository) use ($installedRepositories) {
+        $repositories = array_filter($repositories, static function (array $repository) use (
+            $installedRepositories
+        ): bool {
             foreach ($installedRepositories as $installedRepository) {
                 if ($installedRepository['id'] === $repository['id']) {
                     return false;
                 }
             }
 
-           return true;
+            return true;
         });
 
         return $this->render('dashboard/dashboard.twig', [
@@ -61,7 +61,6 @@ final class DashboardController extends AbstractController
             'repositories' => $repositories,
         ]);
     }
-
 
     private function getInstalledRepositories(): array
     {
