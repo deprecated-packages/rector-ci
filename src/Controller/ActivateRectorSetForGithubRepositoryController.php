@@ -54,7 +54,7 @@ final class ActivateRectorSetForGithubRepositoryController extends AbstractContr
             $rectorSet = $this->rectorSetRepository->getByName($rectorSetName);
             $githubRepository = $this->githubGitRepositoryRepository->getByGithubRepositoryId($githubRepositoryId);
 
-            $this->rectorSetActivator->activateForRepository($githubRepository, $rectorSet);
+            $this->rectorSetActivator->activateSetForRepository($rectorSet, $githubRepository);
         } catch (RectorSetNotFoundException $exception) {
             throw $this->createNotFoundException();
         } catch (RectorSetAlreadyActivatedException $exception) {

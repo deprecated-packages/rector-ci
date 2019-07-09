@@ -39,7 +39,10 @@ final class RectorSetActivator
     }
 
 
-    public function activateForRepository(GithubGitRepository $gitRepository, RectorSet $rectorSet): void
+    /**
+     * @throws RectorSetAlreadyActivatedException
+     */
+    public function activateSetForRepository(RectorSet $rectorSet, GithubGitRepository $gitRepository): void
     {
         if ($this->rectorSetActivationChecker->isSetActiveForRepository($rectorSet, $gitRepository)) {
             throw new RectorSetAlreadyActivatedException();
@@ -48,15 +51,10 @@ final class RectorSetActivator
         $activation = new RectorSetActivation(
             $gitRepository,
             $rectorSet,
-            $this->dateTimeProvider->provideNow()
+            $this->dateTimeProvider->provideNow(),
         );
 
         $this->entityManager->persist($activation);
-        $this->entityManager->flush();
-    }
-
-    public function deactivateForRepository(GithubGitRepository $gitRepository, RectorSet $rectorSet): void
-    {
         $this->entityManager->flush();
     }
 }
