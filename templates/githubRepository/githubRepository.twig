@@ -14,7 +14,7 @@
                 <tr>
                     <td>{{ set.title }}</td>
                     <td>
-                        {% if activationChecker.setActiveForRepository(gitRepository, set) %}
+                        {% if activationChecker.setActiveForRepository(set, gitRepository) %}
                             <a href="#">Deactivate</a>
                         {% else %}
                             <a href="#">Activate</a>
