@@ -15,9 +15,13 @@
                     <td>{{ set.title }}</td>
                     <td>
                         {% if activationChecker.setActiveForRepository(set, gitRepository) %}
-                            <a href="#">Deactivate</a>
+                            <a href="{{ path('deactivate_set_github', {'githubRepositoryId': gitRepository.githubRepositoryId, 'rectorSetName': set.name}) }}">
+                                Deactivate
+                            </a>
                         {% else %}
-                            <a href="#">Activate</a>
+                            <a href="{{ path('activate_set_github', {'githubRepositoryId': gitRepository.githubRepositoryId, 'rectorSetName': set.name}) }}">
+                                Activate
+                            </a>
                         {% endif %}
                     </td>
                 </tr>
