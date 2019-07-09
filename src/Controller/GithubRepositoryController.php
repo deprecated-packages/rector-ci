@@ -9,10 +9,16 @@ use Symfony\Component\Routing\Annotation\Route;
 final class GithubRepositoryController extends AbstractController
 {
     /**
-     * @Route("/app/github-repository", name="github_repository", methods={"GET"})
+     * @Route("/app/repository/github/{githubRepositoryId}", name="github_repository", methods={"GET"})
      */
     public function __invoke(): Response
     {
+        // @TODO: check if organization has installation, if not, redirect user to github
+
+        // @TODO: fetch repository from API, it might throw 403?
+        // @TODO: fetch list of sets
+        // @TODO: fetch activated sets for this repository
+
         $sets = [];
 
         for ($i=0 ; $i<=10 ; $i++) {
