@@ -12,10 +12,9 @@
         <tbody>
             {% for set in sets %}
                 <tr>
-                    <td>{{ set.name }}</td>
-                    <td>{{ set.description }}</td>
+                    <td>{{ set.title }}</td>
                     <td>
-                        {% if set.isActivated %}
+                        {% if activationChecker.setActiveForRepository(gitRepository, set) %}
                             <a href="#">Deactivate</a>
                         {% else %}
                             <a href="#">Activate</a>
