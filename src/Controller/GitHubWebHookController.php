@@ -83,10 +83,10 @@ final class GitHubWebHookController
 
         if (! file_exists($repositoryDirectory)) {
             $this->cloneRepository($repositoryFullName, $accessToken, $repositoryDirectory);
+        } else {
+            $gitCheckoutChangesProcess = new Process(['git', 'checkout', '-f'], $repositoryDirectory);
+            $gitCheckoutChangesProcess->mustRun();
         }
-
-        $gitCheckoutChangesProcess = new Process(['git', 'checkout', '-f'], $repositoryDirectory);
-        $gitCheckoutChangesProcess->mustRun();
 
         $gitFetchProcess = new Process(['git', 'fetch', '-p'], $repositoryDirectory);
         $gitFetchProcess->mustRun();
