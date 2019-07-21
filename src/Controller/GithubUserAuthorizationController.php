@@ -3,7 +3,7 @@
 namespace Rector\RectorCI\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
-use League\OAuth2\Client\Provider\Github as GithubProvider;
+use League\OAuth2\Client\Provider\Github;
 use League\OAuth2\Client\Token\AccessToken;
 use Ramsey\Uuid\Uuid;
 use Rector\RectorCI\Entity\User;
@@ -56,7 +56,7 @@ final class GithubUserAuthorizationController extends AbstractController
     private $githubAuthenticator;
 
     public function __construct(
-        GithubProvider $githubProvider,
+        Github $githubProvider,
         SessionInterface $session,
         UserRepository $userRepository,
         EntityManagerInterface $entityManager,

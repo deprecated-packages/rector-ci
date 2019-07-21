@@ -2,7 +2,7 @@
 
 namespace Rector\RectorCI\Controller;
 
-use Github\Client as Github;
+use Github\Client;
 use Github\ResultPager;
 use Psr\Cache\CacheItemPoolInterface;
 use Rector\RectorCI\Entity\User;
@@ -22,7 +22,7 @@ final class DashboardController extends AbstractController
      */
     private $cacheItemPool;
 
-    public function __construct(Github $github, CacheItemPoolInterface $cacheItemPool)
+    public function __construct(Client $github, CacheItemPoolInterface $cacheItemPool)
     {
         $this->github = $github;
         $this->cacheItemPool = $cacheItemPool;

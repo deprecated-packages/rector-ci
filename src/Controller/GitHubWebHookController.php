@@ -2,7 +2,7 @@
 
 namespace Rector\RectorCI\Controller;
 
-use Github\Client as Github;
+use Github\Client;
 use Github\Exception\RuntimeException;
 use Github\Exception\ValidationFailedException;
 use Nette\Utils\Json;
@@ -25,7 +25,7 @@ final class GitHubWebHookController
      */
     private $github;
 
-    public function __construct(Github $github, GithubInstallationAuthenticator $githubInstallationAuthenticator)
+    public function __construct(Client $github, GithubInstallationAuthenticator $githubInstallationAuthenticator)
     {
         $this->githubInstallationAuthenticator = $githubInstallationAuthenticator;
         $this->github = $github;

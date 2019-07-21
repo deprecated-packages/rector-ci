@@ -35,7 +35,7 @@ final class GithubAuthenticator extends AbstractGuardAuthenticator
     {
         $session = $request->getSession();
 
-        if ($session) {
+        if ($session !== null) {
             return $session->has(self::SESSION_NAME);
         }
 
@@ -47,7 +47,7 @@ final class GithubAuthenticator extends AbstractGuardAuthenticator
         $accessToken = null;
         $session = $request->getSession();
 
-        if ($session) {
+        if ($session !== null) {
             $accessToken = $session->get(self::SESSION_NAME);
         }
 
@@ -77,7 +77,7 @@ final class GithubAuthenticator extends AbstractGuardAuthenticator
     {
         $session = $request->getSession();
 
-        if ($session) {
+        if ($session !== null) {
             /** @var User $user */
             $user = $token->getUser();
 
