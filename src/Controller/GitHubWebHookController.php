@@ -102,7 +102,7 @@ final class GitHubWebHookController
         $composerInstallProcess->setTimeout(null);
         $composerInstallProcess->mustRun();
 
-        $rectorProcess = $this->rectorSetRunner->runSetOnDirectory('setName', $repositoryDirectory);
+        $rectorProcess = $this->rectorSetRunner->runSetOnDirectory('coding-style', $repositoryDirectory);
 
         $rectorProcessOutput = Json::decode($rectorProcess->getOutput());
         $blobShas = [];

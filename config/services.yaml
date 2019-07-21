@@ -7,6 +7,7 @@ parameters:
         redirectUri: '%env(GITHUB_APP_REDIRECT_URI)%'
 
     repositoriesDirectory: '%kernel.project_dir%/%env(REPOSITORIES_DIRECTORY)%'
+    rectorBinary: '%kernel.project_dir%/vendor/bin/rector'
 
 services:
     _defaults:
@@ -39,3 +40,7 @@ services:
     Rector\RectorCI\GitRepository\GitRepositoryPathGetter:
         arguments:
             - '%repositoriesDirectory%'
+
+    Rector\RectorCI\RectorSet\RectorSetRunner:
+        arguments:
+            - '%rectorBinary%'

@@ -20,22 +20,33 @@ final class RectorSetRunner
 
     public function runSetOnDirectory(string $setName, string $directory): Process
     {
-        // @TODO: determine what directories to search, recursive search for common used code directories? (src, packages/**/src, tests), or create .rector-ci.yaml?
-
-        $rectorProcess = new Process([
+        $command = [
             'php',
             $this->pathToRectorBinary,
             'process',
-            'src',
+            '--set',
+            $setName,
             '--output-format=json',
-        ], $directory, [
+        ];
+
+        $command = array_merge($command, $this->getDirectoriesToProcess());
+
+        $rectorProcess = new Process($command, $directory, [
             'APP_ENV' => false,
             'APP_DEBUG' => false,
             'SYMFONY_DOTENV_VARS' => false,
         ]);
+
         $rectorProcess->setTimeout(null);
         $rectorProcess->mustRun();
 
         return $rectorProcess;
+    }
+
+
+    private function getDirectoriesToProcess(): array
+    {
+        // @TODO: determine what directories to search, recursive search for common used code directories? (src, packages/**/src, tests), or create .rector-ci.yaml?
+        return ['src'];
     }
 }
