@@ -6,9 +6,9 @@ use Github\Client as Github;
 use Github\Exception\RuntimeException;
 use Github\Exception\ValidationFailedException;
 use Nette\Utils\Json;
-use Rector\CodeQuality\Tests\Rector\If_\ExplicitBoolCompareRector\Fixture\Nullable;
 use Rector\RectorCI\GitHub\Events\GithubEvent;
 use Rector\RectorCI\GitHub\GithubInstallationAuthenticator;
+use Rector\RectorCI\GitRepository\GitRepositoryDownloader;
 use Rector\RectorCI\GitRepository\GitRepositoryPathGetter;
 use Rector\RectorCI\RectorSet\RectorSetRunner;
 use Symfony\Component\HttpFoundation\Request;
@@ -38,18 +38,25 @@ final class GitHubWebHookController
      */
     private $gitRepositoryPathGetter;
 
+    /**
+     * @var GitRepositoryDownloader
+     */
+    private $gitRepositoryDownloader;
+
 
     public function __construct(
         Github $github,
         GithubInstallationAuthenticator $githubInstallationAuthenticator,
         RectorSetRunner $rectorSetRunner,
-        GitRepositoryPathGetter $gitRepositoryPathGetter
+        GitRepositoryPathGetter $gitRepositoryPathGetter,
+        GitRepositoryDownloader $gitRepositoryDownloader
     )
     {
         $this->githubInstallationAuthenticator = $githubInstallationAuthenticator;
         $this->github = $github;
         $this->rectorSetRunner = $rectorSetRunner;
         $this->gitRepositoryPathGetter = $gitRepositoryPathGetter;
+        $this->gitRepositoryDownloader = $gitRepositoryDownloader;
     }
 
     /**
@@ -78,29 +85,11 @@ final class GitHubWebHookController
         $username = $webhookData->repository->owner->login;
         $repositoryName = $webhookData->repository->name;
         $accessToken = $this->githubInstallationAuthenticator->authenticate($webhookData->installation->id);
+        $commitHash = $webhookData->check_suite->head_sha;
 
         $repositoryDirectory = $this->gitRepositoryPathGetter->get($repositoryFullName);
 
-        if (! file_exists($repositoryDirectory)) {
-            $this->cloneRepository($repositoryFullName, $accessToken, $repositoryDirectory);
-        } else {
-            $gitCheckoutChangesProcess = new Process(['git', 'checkout', '-f'], $repositoryDirectory);
-            $gitCheckoutChangesProcess->mustRun();
-        }
-
-        $gitFetchProcess = new Process(['git', 'fetch', '-p'], $repositoryDirectory);
-        $gitFetchProcess->mustRun();
-
-        $gitCheckoutHeadProcess = new Process([
-            'git',
-            'checkout',
-            $webhookData->check_suite->head_sha,
-        ], $repositoryDirectory);
-        $gitCheckoutHeadProcess->mustRun();
-
-        $composerInstallProcess = new Process(['composer', 'install'], $repositoryDirectory);
-        $composerInstallProcess->setTimeout(null);
-        $composerInstallProcess->mustRun();
+        $this->gitRepositoryDownloader->prepareRepositoryToCommit($repositoryFullName, $accessToken, $commitHash);
 
         $rectorProcess = $this->rectorSetRunner->runSetOnDirectory('coding-style', $repositoryDirectory);
 
