@@ -6,6 +6,8 @@ parameters:
         clientSecret: '%env(GITHUB_APP_CLIENT_SECRET)%'
         redirectUri: '%env(GITHUB_APP_REDIRECT_URI)%'
 
+    repositoriesDirectory: '%kernel.project_dir%/%env(REPOSITORIES_DIRECTORY)%'
+
 services:
     _defaults:
         autowire: true
@@ -33,3 +35,7 @@ services:
     League\OAuth2\Client\Provider\Github:
         arguments:
             - '%github%'
+
+    Rector\RectorCI\GitRepository\GitRepositoryPathGetter:
+        arguments:
+            - '%repositoriesDirectory%'
