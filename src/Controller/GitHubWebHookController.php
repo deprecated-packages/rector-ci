@@ -13,7 +13,6 @@ use Rector\RectorCI\GitRepository\GitRepositoryPathGetter;
 use Rector\RectorCI\RectorSet\RectorSetRunner;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Annotation\Route;
 
 final class GitHubWebHookController
@@ -168,14 +167,5 @@ final class GitHubWebHookController
         }
 
         return new Response('OK');
-    }
-
-    private function cloneRepository(string $repositoryFullName, string $accessToken, string $repositoryDirectory): void
-    {
-        $cloneUrl = sprintf('https://x-access-token:%s@github.com/%s.git', $accessToken, $repositoryFullName);
-
-        $cloneProcess = new Process(['git', 'clone', $cloneUrl, $repositoryDirectory]);
-        $cloneProcess->setTimeout(null);
-        $cloneProcess->mustRun();
     }
 }

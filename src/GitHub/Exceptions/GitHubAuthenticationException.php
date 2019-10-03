@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Rector\RectorCI\Exception\GitHub;
+namespace Rector\RectorCI\GitHub\Exceptions;
 
 use Exception;
 

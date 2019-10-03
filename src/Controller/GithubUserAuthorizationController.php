@@ -7,7 +7,7 @@ use League\OAuth2\Client\Provider\Github as GithubProvider;
 use League\OAuth2\Client\Token\AccessToken;
 use Ramsey\Uuid\Uuid;
 use Rector\RectorCI\Entity\User;
-use Rector\RectorCI\Exception\GitHub\GitHubAuthenticationException;
+use Rector\RectorCI\GitHub\Exceptions\GitHubAuthenticationException;
 use Rector\RectorCI\Repository\UserRepository;
 use Rector\RectorCI\User\Exceptions\UserNotFoundException;
 use Rector\RectorCI\User\Security\GithubAuthenticator;

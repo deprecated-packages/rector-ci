@@ -45,7 +45,7 @@ final class RectorSetActivator
             throw new RectorSetAlreadyActivatedException();
         }
 
-        $activation = new RectorSetActivation($githubGitRepository, $rectorSet, $this->dateTimeProvider->provideNow(), );
+        $activation = new RectorSetActivation($githubGitRepository, $rectorSet, $this->dateTimeProvider->provideNow());
 
         $this->entityManager->persist($activation);
         $this->entityManager->flush();
