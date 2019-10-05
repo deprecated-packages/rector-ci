@@ -5,7 +5,7 @@ namespace Rector\RectorCI\Repository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NoResultException;
 use Ramsey\Uuid\UuidInterface;
-use Rector\RectorCI\Entity\RectorSetActivation;
+use Rector\RectorCI\Entity\GithubGitRepositoryRectorSet;
 use Rector\RectorCI\RectorSet\Exception\RectorSetNotActiveException;
 
 final class RectorSetActivationRepository
@@ -23,7 +23,7 @@ final class RectorSetActivationRepository
     public function doesActivationExist(UuidInterface $githubGitRepositoryId, UuidInterface $rectorSetId): bool
     {
         return (bool) $this->entityManager->createQueryBuilder()
-            ->from(RectorSetActivation::class, 'activation')
+            ->from(GithubGitRepositoryRectorSet::class, 'activation')
             ->select('COUNT(activation.rectorSet)')
             ->where('activation.githubGitRepository = :githubGitRepository')
             ->andWhere('activation.rectorSet = :rectorSet')
@@ -39,10 +39,10 @@ final class RectorSetActivationRepository
     public function getRectorSetActivationForRepository(
         UuidInterface $rectorSetId,
         UuidInterface $githubGitRepositoryId
-    ): RectorSetActivation {
+    ): GithubGitRepositoryRectorSet {
         try {
             return $this->entityManager->createQueryBuilder()
-                ->from(RectorSetActivation::class, 'activation')
+                ->from(GithubGitRepositoryRectorSet::class, 'activation')
                 ->select('activation')
                 ->where('activation.githubGitRepository = :githubGitRepository')
                 ->andWhere('activation.rectorSet = :rectorSet')

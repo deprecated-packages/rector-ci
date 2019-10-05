@@ -30,7 +30,7 @@ parameters:
 
         SlevomatCodingStandard\Sniffs\Variables\UnusedVariableSniff.UnusedVariable:
             # work in progress - remove later
-            - 'src/Controller/GitHubWebHookController.php'
+            - 'src/Controller/GithubWebHookController.php'
 
         SlevomatCodingStandard\Sniffs\Classes\UnusedPrivateElementsSniff.WriteOnlyProperty:
             # This is okay for entities, it might happen especially for IDs

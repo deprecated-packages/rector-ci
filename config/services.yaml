@@ -19,7 +19,7 @@ services:
         resource: '../src/*'
         exclude: '../src/{HttpKernel/RectorCIKernel.php,Entity,**/Exceptions,**/Entity}'
 
-    Rector\RectorCI\GitHub\GithubJWTTokenFactory:
+    Rector\RectorCI\Github\GithubJWTTokenFactory:
         arguments:
             - '%env(GITHUB_APP_ID)%'
             - '%env(GITHUB_APP_PRIVATE_KEY)%'
@@ -27,7 +27,7 @@ services:
 
     github.jwt.token:
         class: Lcobucci\JWT\Token
-        factory: ['@Rector\RectorCI\GitHub\GithubJWTTokenFactory', 'create']
+        factory: ['@Rector\RectorCI\Github\GithubJWTTokenFactory', 'create']
 
     Rector\RectorCI\Controller\HomepageController:
         arguments:

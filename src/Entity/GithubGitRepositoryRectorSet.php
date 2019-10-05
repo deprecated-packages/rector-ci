@@ -8,8 +8,18 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity
  */
-class RectorSetActivation
+class GithubGitRepositoryRectorSet
 {
+    /**
+     * @var string
+     */
+    private const STATUS_PENDING = 'pending';
+
+    /**
+     * @var string
+     */
+    private const STATUS_ACTIVE = 'active';
+
     /**
      * @var GithubGitRepository
      * @ORM\Id
@@ -30,6 +40,13 @@ class RectorSetActivation
      */
     private $activatedAt;
 
+    /**
+     * @ORM\Column
+     * @var string
+     */
+    private $status;
+
+
     public function __construct(
         GithubGitRepository $githubGitRepository,
         RectorSet $rectorSet,
@@ -38,5 +55,6 @@ class RectorSetActivation
         $this->githubGitRepository = $githubGitRepository;
         $this->rectorSet = $rectorSet;
         $this->activatedAt = $activatedAt;
+        $this->status = self::STATUS_PENDING;
     }
 }

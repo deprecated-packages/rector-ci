@@ -6,8 +6,8 @@ use Github\Client as Github;
 use Github\Exception\RuntimeException;
 use Github\Exception\ValidationFailedException;
 use Nette\Utils\Json;
-use Rector\RectorCI\GitHub\Events\GithubEvent;
-use Rector\RectorCI\GitHub\GithubInstallationAuthenticator;
+use Rector\RectorCI\Github\Events\GithubEvent;
+use Rector\RectorCI\Github\GithubInstallationAuthenticator;
 use Rector\RectorCI\GitRepository\GitRepositoryDownloader;
 use Rector\RectorCI\GitRepository\GitRepositoryPathGetter;
 use Rector\RectorCI\RectorSet\RectorSetRunner;
@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-final class GitHubWebHookController
+final class GithubWebHookController
 {
     /**
      * @var GithubInstallationAuthenticator

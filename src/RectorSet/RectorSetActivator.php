@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Rector\RectorCI\DateTime\DateTimeProvider;
 use Rector\RectorCI\Entity\GithubGitRepository;
 use Rector\RectorCI\Entity\RectorSet;
-use Rector\RectorCI\Entity\RectorSetActivation;
+use Rector\RectorCI\Entity\GithubGitRepositoryRectorSet;
 use Rector\RectorCI\RectorSet\Exception\RectorSetAlreadyActivatedException;
 
 final class RectorSetActivator
@@ -45,7 +45,7 @@ final class RectorSetActivator
             throw new RectorSetAlreadyActivatedException();
         }
 
-        $activation = new RectorSetActivation($githubGitRepository, $rectorSet, $this->dateTimeProvider->provideNow());
+        $activation = new GithubGitRepositoryRectorSet($githubGitRepository, $rectorSet, $this->dateTimeProvider->provideNow());
 
         $this->entityManager->persist($activation);
         $this->entityManager->flush();

@@ -7,7 +7,7 @@ use League\OAuth2\Client\Provider\Github as GithubProvider;
 use League\OAuth2\Client\Token\AccessToken;
 use Ramsey\Uuid\Uuid;
 use Rector\RectorCI\Entity\User;
-use Rector\RectorCI\GitHub\Exceptions\GitHubAuthenticationException;
+use Rector\RectorCI\Github\Exceptions\GithubAuthenticationException;
 use Rector\RectorCI\Repository\UserRepository;
 use Rector\RectorCI\User\Exceptions\UserNotFoundException;
 use Rector\RectorCI\User\Security\GithubAuthenticator;
@@ -90,7 +90,7 @@ final class GithubUserAuthorizationController extends AbstractController
         if ($this->session->has(self::STATE_SESSION_NAME) && $state !== $this->session->get(self::STATE_SESSION_NAME)) {
             $this->clearState();
 
-            throw new GitHubAuthenticationException('Invalid state!');
+            throw new GithubAuthenticationException('Invalid state!');
         }
 
         /** @var AccessToken $token */

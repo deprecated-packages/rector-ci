@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Rector\RectorCI\GitHub\Events;
+namespace Rector\RectorCI\Github\Events;
 
 final class GithubEvent
 {
