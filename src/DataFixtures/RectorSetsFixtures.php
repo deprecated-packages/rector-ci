@@ -12,11 +12,13 @@ final class RectorSetsFixtures extends Fixture implements FixtureGroupInterface
 {
     public function load(ObjectManager $objectManager): void
     {
-        for ($i = 0; $i <= 10; $i++) {
-            $set = new RectorSet(Uuid::uuid4(), 'set-' . $i, 'Set #' . ($i + 1));
+        $deadCodeSet = new RectorSet(
+            Uuid::fromString('41d8d30e-d3fe-4eb4-8933-ff5e5958d035'),
+            'dead-code',
+            'Dead code'
+        );
 
-            $objectManager->persist($set);
-        }
+        $objectManager->persist($deadCodeSet);
 
         $objectManager->flush();
     }

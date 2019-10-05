@@ -7,6 +7,7 @@
         {% for repository in installedRepositories %}
             <p>
                 <a href="{{ path('github_repository', {githubRepositoryId: repository.id}) }}">
+                    [Installed]
                     {{ repository.full_name }}
                 </a>
             </p>
