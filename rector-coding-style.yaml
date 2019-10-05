@@ -1,6 +1,2 @@
-parameters:
-    exclude_paths:
-        - '*/src/Samples/*'
-
 services:
     Rector\CodingStyle\Rector\Namespace_\ImportFullyQualifiedNamesRector: ~

@@ -14,10 +14,6 @@ services:
         maxCognitiveComplexity: 8
 
 parameters:
-    exclude_files:
-        # tests
-        - 'src/Samples/*'
-
     skip:
         # from psr12.yaml set
         PhpCsFixer\Fixer\Operator\UnaryOperatorSpacesFixer: ~
