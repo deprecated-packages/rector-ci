@@ -4,12 +4,12 @@ namespace Rector\RectorCI\RectorSet;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Rector\RectorCI\DateTime\DateTimeProvider;
-use Rector\RectorCI\Entity\GithubGitRepository;
+use Rector\RectorCI\Entity\GithubRepository;
 use Rector\RectorCI\Entity\RectorSet;
-use Rector\RectorCI\Entity\GithubGitRepositoryRectorSet;
+use Rector\RectorCI\Entity\GithubRepositoryRectorSetInstallation;
 use Rector\RectorCI\RectorSet\Exception\RectorSetAlreadyInstalledException;
 
-final class GithubGitRepositoryRectorSetInstaller
+final class GithubRepositoryRectorSetInstaller
 {
     /**
      * @var EntityManagerInterface
@@ -32,14 +32,14 @@ final class GithubGitRepositoryRectorSetInstaller
     /**
      * @throws RectorSetAlreadyInstalledException
      */
-    public function install(RectorSet $rectorSet, GithubGitRepository $githubGitRepository): void
+    public function install(RectorSet $rectorSet, GithubRepository $githubRepository): void
     {
         // @TODO it might be already installed
         // throw new RectorSetAlreadyInstalledException();
 
         // Tady je potreba nejdrive poslat PR a az potom se vytvori pending status
 
-        $repositoryRectorSet = new GithubGitRepositoryRectorSet($githubGitRepository, $rectorSet, $this->dateTimeProvider->provideNow());
+        $repositoryRectorSet = new GithubRepositoryRectorSetInstallation($githubRepository, $rectorSet, $this->dateTimeProvider->provideNow());
 
         $this->entityManager->persist($repositoryRectorSet);
         $this->entityManager->flush();

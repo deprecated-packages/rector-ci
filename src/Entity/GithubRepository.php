@@ -8,7 +8,7 @@ use Ramsey\Uuid\UuidInterface;
 /**
  * @ORM\Entity
  */
-class GithubGitRepository
+class GithubRepository
 {
     /**
      * @var int

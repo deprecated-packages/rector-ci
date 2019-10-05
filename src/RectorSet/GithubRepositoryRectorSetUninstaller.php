@@ -3,12 +3,12 @@
 namespace Rector\RectorCI\RectorSet;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Rector\RectorCI\Entity\GithubGitRepository;
+use Rector\RectorCI\Entity\GithubRepository;
 use Rector\RectorCI\Entity\RectorSet;
 use Rector\RectorCI\RectorSet\Exception\RectorSetNotActiveException;
-use Rector\RectorCI\Repository\GithubGitRepositoryRectorSetRepository;
+use Rector\RectorCI\Repository\GithubRepositoryRectorSetRepository;
 
-final class GithubGitRepositoryRectorSetUninstaller
+final class GithubRepositoryRectorSetUninstaller
 {
     /**
      * @var EntityManagerInterface
@@ -16,13 +16,13 @@ final class GithubGitRepositoryRectorSetUninstaller
     private $entityManager;
 
     /**
-     * @var GithubGitRepositoryRectorSetRepository
+     * @var GithubRepositoryRectorSetRepository
      */
     private $rectorSetActivationRepository;
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        GithubGitRepositoryRectorSetRepository $rectorSetActivationRepository
+        GithubRepositoryRectorSetRepository $rectorSetActivationRepository
     ) {
         $this->entityManager = $entityManager;
         $this->rectorSetActivationRepository = $rectorSetActivationRepository;
@@ -31,11 +31,11 @@ final class GithubGitRepositoryRectorSetUninstaller
     /**
      * @throws RectorSetNotActiveException
      */
-    public function uninstall(RectorSet $rectorSet, GithubGitRepository $githubGitRepository): void
+    public function uninstall(RectorSet $rectorSet, GithubRepository $githubRepository): void
     {
         $repositoryRectorSet = $this->rectorSetActivationRepository->getRectorSetActivationForRepository(
             $rectorSet->getId(),
-            $githubGitRepository->getId()
+            $githubRepository->getId()
         );
 
         $this->entityManager->remove($repositoryRectorSet);

@@ -4,8 +4,8 @@ namespace Rector\RectorCI\Controller;
 
 use Rector\RectorCI\RectorSet\Exception\RectorSetAlreadyInstalledException;
 use Rector\RectorCI\RectorSet\Exception\RectorSetNotFoundException;
-use Rector\RectorCI\RectorSet\GithubGitRepositoryRectorSetInstaller;
-use Rector\RectorCI\Repository\GithubGitRepositoryRepository;
+use Rector\RectorCI\RectorSet\GithubRepositoryRectorSetInstaller;
+use Rector\RectorCI\Repository\GithubRepositoryRepository;
 use Rector\RectorCI\Repository\RectorSetRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Annotation\Route;
 final class InstallRectorSetForGithubRepositoryController extends AbstractController
 {
     /**
-     * @var GithubGitRepositoryRectorSetInstaller
+     * @var GithubRepositoryRectorSetInstaller
      */
     private $rectorSetInstaller;
 
@@ -25,18 +25,18 @@ final class InstallRectorSetForGithubRepositoryController extends AbstractContro
     private $rectorSetRepository;
 
     /**
-     * @var GithubGitRepositoryRepository
+     * @var GithubRepositoryRepository
      */
-    private $githubGitRepositoryRepository;
+    private $githubRepositoryRepository;
 
     public function __construct(
-        GithubGitRepositoryRectorSetInstaller $rectorSetInstaller,
+        GithubRepositoryRectorSetInstaller $rectorSetInstaller,
         RectorSetRepository $rectorSetRepository,
-        GithubGitRepositoryRepository $githubGitRepositoryRepository
+        GithubRepositoryRepository $githubRepositoryRepository
     ) {
         $this->rectorSetInstaller = $rectorSetInstaller;
         $this->rectorSetRepository = $rectorSetRepository;
-        $this->githubGitRepositoryRepository = $githubGitRepositoryRepository;
+        $this->githubRepositoryRepository = $githubRepositoryRepository;
     }
 
     /**
@@ -49,7 +49,7 @@ final class InstallRectorSetForGithubRepositoryController extends AbstractContro
 
         try {
             $rectorSet = $this->rectorSetRepository->getByName($rectorSetName);
-            $githubRepository = $this->githubGitRepositoryRepository->getByGithubRepositoryId($githubRepositoryId);
+            $githubRepository = $this->githubRepositoryRepository->getByGithubRepositoryId($githubRepositoryId);
 
             $this->rectorSetInstaller->install($rectorSet, $githubRepository);
         } catch (RectorSetNotFoundException $rectorSetNotFoundException) {

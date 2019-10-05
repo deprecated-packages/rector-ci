@@ -4,8 +4,8 @@ namespace Rector\RectorCI\Controller;
 
 use Rector\RectorCI\RectorSet\Exception\RectorSetNotActiveException;
 use Rector\RectorCI\RectorSet\Exception\RectorSetNotFoundException;
-use Rector\RectorCI\RectorSet\GithubGitRepositoryRectorSetUninstaller;
-use Rector\RectorCI\Repository\GithubGitRepositoryRepository;
+use Rector\RectorCI\RectorSet\GithubRepositoryRectorSetUninstaller;
+use Rector\RectorCI\Repository\GithubRepositoryRepository;
 use Rector\RectorCI\Repository\RectorSetRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,22 +20,22 @@ final class UninstallRectorSetFromGithubRepositoryController extends AbstractCon
     private $rectorSetRepository;
 
     /**
-     * @var GithubGitRepositoryRepository
+     * @var GithubRepositoryRepository
      */
-    private $githubGitRepositoryRepository;
+    private $githubRepositoryRepository;
 
     /**
-     * @var GithubGitRepositoryRectorSetUninstaller
+     * @var GithubRepositoryRectorSetUninstaller
      */
     private $rectorSetUninstaller;
 
     public function __construct(
-        GithubGitRepositoryRectorSetUninstaller $rectorSetUninstaller,
+        GithubRepositoryRectorSetUninstaller $rectorSetUninstaller,
         RectorSetRepository $rectorSetRepository,
-        GithubGitRepositoryRepository $githubGitRepositoryRepository
+        GithubRepositoryRepository $githubRepositoryRepository
     ) {
         $this->rectorSetRepository = $rectorSetRepository;
-        $this->githubGitRepositoryRepository = $githubGitRepositoryRepository;
+        $this->githubRepositoryRepository = $githubRepositoryRepository;
         $this->rectorSetUninstaller = $rectorSetUninstaller;
     }
 
@@ -49,7 +49,7 @@ final class UninstallRectorSetFromGithubRepositoryController extends AbstractCon
 
         try {
             $rectorSet = $this->rectorSetRepository->getByName($rectorSetName);
-            $githubRepository = $this->githubGitRepositoryRepository->getByGithubRepositoryId($githubRepositoryId);
+            $githubRepository = $this->githubRepositoryRepository->getByGithubRepositoryId($githubRepositoryId);
 
             $this->rectorSetUninstaller->uninstall($rectorSet, $githubRepository);
         } catch (RectorSetNotFoundException $rectorSetNotFoundException) {

@@ -5,9 +5,9 @@ namespace Rector\RectorCI\Repository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NoResultException;
 use Rector\RectorCI\Doctrine\IdentityProvider;
-use Rector\RectorCI\Entity\GithubGitRepository;
+use Rector\RectorCI\Entity\GithubRepository;
 
-final class GithubGitRepositoryRepository
+final class GithubRepositoryRepository
 {
     /**
      * @var EntityManagerInterface
@@ -25,18 +25,18 @@ final class GithubGitRepositoryRepository
         $this->identityProvider = $identityProvider;
     }
 
-    public function getByGithubRepositoryId(int $githubRepositoryId): GithubGitRepository
+    public function getByGithubRepositoryId(int $githubRepositoryId): GithubRepository
     {
         try {
             $repository = $this->entityManager->createQueryBuilder()
-                ->from(GithubGitRepository::class, 'repository')
+                ->from(GithubRepository::class, 'repository')
                 ->select('repository')
                 ->where('repository.githubRepositoryId = :githubRepositoryId')
                 ->setParameter('githubRepositoryId', $githubRepositoryId)
                 ->getQuery()
                 ->getSingleResult();
         } catch (NoResultException $noResultException) {
-            $repository = new GithubGitRepository($this->identityProvider->provide(), $githubRepositoryId);
+            $repository = new GithubRepository($this->identityProvider->provide(), $githubRepositoryId);
 
             $this->entityManager->persist($repository);
             $this->entityManager->flush();

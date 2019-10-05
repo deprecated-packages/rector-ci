@@ -5,10 +5,10 @@ namespace Rector\RectorCI\Repository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NoResultException;
 use Ramsey\Uuid\UuidInterface;
-use Rector\RectorCI\Entity\GithubGitRepositoryRectorSet;
+use Rector\RectorCI\Entity\GithubRepositoryRectorSetInstallation;
 use Rector\RectorCI\RectorSet\Exception\RectorSetNotActiveException;
 
-final class GithubGitRepositoryRectorSetRepository
+final class GithubRepositoryRectorSetRepository
 {
     /**
      * @var EntityManagerInterface
@@ -20,14 +20,14 @@ final class GithubGitRepositoryRectorSetRepository
         $this->entityManager = $entityManager;
     }
 
-    public function doesActivationExist(UuidInterface $githubGitRepositoryId, UuidInterface $rectorSetId): bool
+    public function doesActivationExist(UuidInterface $githubRepositoryId, UuidInterface $rectorSetId): bool
     {
         return (bool) $this->entityManager->createQueryBuilder()
-            ->from(GithubGitRepositoryRectorSet::class, 'rectorSetInstallation')
+            ->from(GithubRepositoryRectorSetInstallation::class, 'rectorSetInstallation')
             ->select('COUNT(rectorSetInstallation.rectorSet)')
-            ->where('rectorSetInstallation.githubGitRepository = :githubGitRepository')
+            ->where('rectorSetInstallation.githubRepository = :githubRepository')
             ->andWhere('rectorSetInstallation.rectorSet = :rectorSet')
-            ->setParameter('githubGitRepository', $githubGitRepositoryId)
+            ->setParameter('githubRepository', $githubRepositoryId)
             ->setParameter('rectorSet', $rectorSetId)
             ->getQuery()
             ->getSingleScalarResult();
@@ -38,15 +38,15 @@ final class GithubGitRepositoryRectorSetRepository
      */
     public function getRectorSetActivationForRepository(
         UuidInterface $rectorSetId,
-        UuidInterface $githubGitRepositoryId
-    ): GithubGitRepositoryRectorSet {
+        UuidInterface $githubRepositoryId
+    ): GithubRepositoryRectorSetInstallation {
         try {
             return $this->entityManager->createQueryBuilder()
-                ->from(GithubGitRepositoryRectorSet::class, 'rectorSetInstallation')
+                ->from(GithubRepositoryRectorSetInstallation::class, 'rectorSetInstallation')
                 ->select('rectorSetInstallation')
-                ->where('rectorSetInstallation.githubGitRepository = :githubGitRepository')
+                ->where('rectorSetInstallation.githubRepository = :githubRepository')
                 ->andWhere('rectorSetInstallation.rectorSet = :rectorSet')
-                ->setParameter('githubGitRepository', $githubGitRepositoryId)
+                ->setParameter('githubRepository', $githubRepositoryId)
                 ->setParameter('rectorSet', $rectorSetId)
                 ->getQuery()
                 ->getSingleResult();

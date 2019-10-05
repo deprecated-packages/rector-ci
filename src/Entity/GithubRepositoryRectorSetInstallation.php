@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity
  */
-class GithubGitRepositoryRectorSet
+class GithubRepositoryRectorSetInstallation
 {
     /**
      * @var string
@@ -21,11 +21,11 @@ class GithubGitRepositoryRectorSet
     private const STATUS_ACTIVE = 'active';
 
     /**
-     * @var GithubGitRepository
+     * @var GithubRepository
      * @ORM\Id
-     * @ORM\ManyToOne(targetEntity="GithubGitRepository")
+     * @ORM\ManyToOne(targetEntity="GithubRepository")
      */
-    private $githubGitRepository;
+    private $githubRepository;
 
     /**
      * @var RectorSet
@@ -48,11 +48,11 @@ class GithubGitRepositoryRectorSet
 
 
     public function __construct(
-        GithubGitRepository $githubGitRepository,
+        GithubRepository $githubRepository,
         RectorSet $rectorSet,
         DateTimeImmutable $installedAt
     ) {
-        $this->githubGitRepository = $githubGitRepository;
+        $this->githubRepository = $githubRepository;
         $this->rectorSet = $rectorSet;
         $this->installedAt = $installedAt;
         $this->status = self::STATUS_PENDING;
