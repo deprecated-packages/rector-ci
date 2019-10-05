@@ -4,6 +4,6 @@ namespace Rector\RectorCI\RectorSet\Exception;
 
 use LogicException;
 
-final class RectorSetAlreadyActivatedException extends LogicException
+final class RectorSetAlreadyInstalledException extends LogicException
 {
 }

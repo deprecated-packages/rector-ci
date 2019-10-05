@@ -14,15 +14,23 @@
                 <tr>
                     <td>{{ set.title }}</td>
                     <td>
+                        <a href="{{ path('install_set_github', {'githubRepositoryId': githubRepositoryId, 'rectorSetName': set.name}) }}">
+                            Activate
+                        </a>
+
+
+                        {# TODO: in_array installed sets #}
+                        {#
                         {% if activationChecker.setActiveForRepository(set, gitRepository) %}
-                            <a href="{{ path('deactivate_set_github', {'githubRepositoryId': gitRepository.githubRepositoryId, 'rectorSetName': set.name}) }}">
+                            <a href="{{ path('uninstall_set_github', {'githubRepositoryId': gitRepository.githubRepositoryId, 'rectorSetName': set.name}) }}">
                                 Deactivate
                             </a>
                         {% else %}
-                            <a href="{{ path('activate_set_github', {'githubRepositoryId': gitRepository.githubRepositoryId, 'rectorSetName': set.name}) }}">
+                            <a href="{{ path('install_set_github', {'githubRepositoryId': gitRepository.githubRepositoryId, 'rectorSetName': set.name}) }}">
                                 Activate
                             </a>
                         {% endif %}
+                        #}
                     </td>
                 </tr>
             {% endfor %}

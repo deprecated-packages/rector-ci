@@ -38,7 +38,7 @@ class GithubGitRepositoryRectorSet
      * @var DateTimeImmutable
      * @ORM\Column(type="datetime_immutable")
      */
-    private $activatedAt;
+    private $installedAt;
 
     /**
      * @ORM\Column
@@ -50,11 +50,11 @@ class GithubGitRepositoryRectorSet
     public function __construct(
         GithubGitRepository $githubGitRepository,
         RectorSet $rectorSet,
-        DateTimeImmutable $activatedAt
+        DateTimeImmutable $installedAt
     ) {
         $this->githubGitRepository = $githubGitRepository;
         $this->rectorSet = $rectorSet;
-        $this->activatedAt = $activatedAt;
+        $this->installedAt = $installedAt;
         $this->status = self::STATUS_PENDING;
     }
 }

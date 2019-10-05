@@ -8,7 +8,7 @@ use Ramsey\Uuid\UuidInterface;
 use Rector\RectorCI\Entity\GithubGitRepositoryRectorSet;
 use Rector\RectorCI\RectorSet\Exception\RectorSetNotActiveException;
 
-final class RectorSetActivationRepository
+final class GithubGitRepositoryRectorSetRepository
 {
     /**
      * @var EntityManagerInterface
@@ -23,10 +23,10 @@ final class RectorSetActivationRepository
     public function doesActivationExist(UuidInterface $githubGitRepositoryId, UuidInterface $rectorSetId): bool
     {
         return (bool) $this->entityManager->createQueryBuilder()
-            ->from(GithubGitRepositoryRectorSet::class, 'activation')
-            ->select('COUNT(activation.rectorSet)')
-            ->where('activation.githubGitRepository = :githubGitRepository')
-            ->andWhere('activation.rectorSet = :rectorSet')
+            ->from(GithubGitRepositoryRectorSet::class, 'rectorSetInstallation')
+            ->select('COUNT(rectorSetInstallation.rectorSet)')
+            ->where('rectorSetInstallation.githubGitRepository = :githubGitRepository')
+            ->andWhere('rectorSetInstallation.rectorSet = :rectorSet')
             ->setParameter('githubGitRepository', $githubGitRepositoryId)
             ->setParameter('rectorSet', $rectorSetId)
             ->getQuery()
@@ -42,10 +42,10 @@ final class RectorSetActivationRepository
     ): GithubGitRepositoryRectorSet {
         try {
             return $this->entityManager->createQueryBuilder()
-                ->from(GithubGitRepositoryRectorSet::class, 'activation')
-                ->select('activation')
-                ->where('activation.githubGitRepository = :githubGitRepository')
-                ->andWhere('activation.rectorSet = :rectorSet')
+                ->from(GithubGitRepositoryRectorSet::class, 'rectorSetInstallation')
+                ->select('rectorSetInstallation')
+                ->where('rectorSetInstallation.githubGitRepository = :githubGitRepository')
+                ->andWhere('rectorSetInstallation.rectorSet = :rectorSet')
                 ->setParameter('githubGitRepository', $githubGitRepositoryId)
                 ->setParameter('rectorSet', $rectorSetId)
                 ->getQuery()

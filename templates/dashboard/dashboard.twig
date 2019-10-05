@@ -6,7 +6,7 @@
     {% if is_granted(constant('Rector\\RectorCI\\User\\Security\\UserRole::BETA_TESTER')) %}
         {% for repository in installedRepositories %}
             <p>
-                <a href="{{ path('github_repository', {githubRepositoryId: repository.id}) }}">
+                <a href="{{ path('github_repository_detail', {githubRepositoryId: repository.id}) }}">
                     [Installed]
                     {{ repository.full_name }}
                 </a>
@@ -15,7 +15,7 @@
 
         {% for repository in repositories %}
             <p>
-                <a href="{{ path('github_repository', {githubRepositoryId: repository.id}) }}">
+                <a href="{{ path('github_repository_detail', {githubRepositoryId: repository.id}) }}">
                     {{ repository.full_name }}
                 </a>
             </p>

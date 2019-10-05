@@ -2,7 +2,6 @@
 
 namespace Rector\RectorCI\Controller;
 
-use Rector\RectorCI\RectorSet\RectorSetActivationChecker;
 use Rector\RectorCI\Repository\GithubGitRepositoryRepository;
 use Rector\RectorCI\Repository\RectorSetRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -10,7 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-final class GithubRepositoryController extends AbstractController
+final class GithubRepositoryDetailController extends AbstractController
 {
     /**
      * @var RectorSetRepository
@@ -22,23 +21,17 @@ final class GithubRepositoryController extends AbstractController
      */
     private $githubGitRepositoryRepository;
 
-    /**
-     * @var RectorSetActivationChecker
-     */
-    private $rectorSetActivationChecker;
 
     public function __construct(
         RectorSetRepository $rectorSetRepository,
-        GithubGitRepositoryRepository $githubGitRepositoryRepository,
-        RectorSetActivationChecker $rectorSetActivationChecker
+        GithubGitRepositoryRepository $githubGitRepositoryRepository
     ) {
         $this->rectorSetRepository = $rectorSetRepository;
         $this->githubGitRepositoryRepository = $githubGitRepositoryRepository;
-        $this->rectorSetActivationChecker = $rectorSetActivationChecker;
     }
 
     /**
-     * @Route("/app/repository/github/{githubRepositoryId}", name="github_repository", methods={"GET"})
+     * @Route("/app/repository/github/{githubRepositoryId}", name="github_repository_detail", methods={"GET"})
      */
     public function __invoke(Request $request): Response
     {
@@ -50,10 +43,10 @@ final class GithubRepositoryController extends AbstractController
         // @TODO: fetch list of sets
         // @TODO: fetch activated sets for this repository
 
-        return $this->render('githubRepository/githubRepository.twig', [
+        return $this->render('githubRepository/githubRepositoryDetail.twig', [
             'sets' => $this->rectorSetRepository->findAll(),
-            'gitRepository' => $this->githubGitRepositoryRepository->getByGithubRepositoryId($githubRepositoryId),
-            'activationChecker' => $this->rectorSetActivationChecker,
+            'installedSets' => [],
+            'githubRepositoryId' => $githubRepositoryId,
         ]);
     }
 }
