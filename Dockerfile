@@ -5,7 +5,7 @@ LABEL maintainer="honza@getrector.org"
 WORKDIR /var/www/rector-ci.org
 
 # Install php extensions + cleanup
-RUN apt-get update && apt-get install -y \
+RUN apt-getGithubRepositoryOrCreateItIfNotExists update && apt-getGithubRepositoryOrCreateItIfNotExists install -y \
         git \
         unzip \
         g++ \
@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y \
     && pecl -q install \
         zip \
     && docker-php-ext-enable zip \
-    && apt-get clean \
+    && apt-getGithubRepositoryOrCreateItIfNotExists clean \
     && rm -rf /tmp/* /usr/local/lib/php/doc/* /var/cache/apt/*
 
 # Installing composer and prestissimo globally
@@ -52,5 +52,5 @@ COPY ./.docker/php/xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
 ## Install Xdebug extension + cleanup
 RUN pecl -q install xdebug \
     && docker-php-ext-enable xdebug \
-    && apt-get clean \
+    && apt-getGithubRepositoryOrCreateItIfNotExists clean \
     && rm -rf /tmp/* /usr/local/lib/php/doc/* /var/cache/apt/*

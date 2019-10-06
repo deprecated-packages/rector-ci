@@ -5,8 +5,6 @@ namespace Rector\RectorCI\Controller;
 use Rector\RectorCI\RectorSet\Exception\RectorSetAlreadyInstalledException;
 use Rector\RectorCI\RectorSet\Exception\RectorSetNotFoundException;
 use Rector\RectorCI\RectorSet\GithubRepositoryRectorSetInstaller;
-use Rector\RectorCI\Repository\GithubRepositoryRepository;
-use Rector\RectorCI\Repository\RectorSetRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,24 +17,11 @@ final class InstallRectorSetForGithubRepositoryController extends AbstractContro
      */
     private $rectorSetInstaller;
 
-    /**
-     * @var RectorSetRepository
-     */
-    private $rectorSetRepository;
-
-    /**
-     * @var GithubRepositoryRepository
-     */
-    private $githubRepositoryRepository;
 
     public function __construct(
-        GithubRepositoryRectorSetInstaller $rectorSetInstaller,
-        RectorSetRepository $rectorSetRepository,
-        GithubRepositoryRepository $githubRepositoryRepository
+        GithubRepositoryRectorSetInstaller $rectorSetInstaller
     ) {
         $this->rectorSetInstaller = $rectorSetInstaller;
-        $this->rectorSetRepository = $rectorSetRepository;
-        $this->githubRepositoryRepository = $githubRepositoryRepository;
     }
 
     /**
@@ -48,10 +33,7 @@ final class InstallRectorSetForGithubRepositoryController extends AbstractContro
         $rectorSetName = $request->attributes->get('rectorSetName');
 
         try {
-            $rectorSet = $this->rectorSetRepository->getByName($rectorSetName);
-            $githubRepository = $this->githubRepositoryRepository->getByGithubRepositoryId($githubRepositoryId);
-
-            $this->rectorSetInstaller->install($rectorSet, $githubRepository);
+            $this->rectorSetInstaller->install($rectorSetName, $githubRepositoryId);
         } catch (RectorSetNotFoundException $rectorSetNotFoundException) {
             throw $this->createNotFoundException();
         } catch (RectorSetAlreadyInstalledException $rectorSetAlreadyActivatedException) {

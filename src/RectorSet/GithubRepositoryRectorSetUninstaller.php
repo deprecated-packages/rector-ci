@@ -3,10 +3,10 @@
 namespace Rector\RectorCI\RectorSet;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Rector\RectorCI\Entity\GithubRepository;
-use Rector\RectorCI\Entity\RectorSet;
-use Rector\RectorCI\RectorSet\Exception\RectorSetNotActiveException;
-use Rector\RectorCI\Repository\GithubRepositoryRectorSetRepository;
+use Rector\RectorCI\Github\Query\GetGithubRepositoryQuery;
+use Rector\RectorCI\RectorSet\Exception\RectorSetNotInstalledException;
+use Rector\RectorCI\RectorSet\Query\GetGithubRepositoryRectorSetInstallationQuery;
+use Rector\RectorCI\RectorSet\Query\GetRectorSetByNameQuery;
 
 final class GithubRepositoryRectorSetUninstaller
 {
@@ -16,26 +16,27 @@ final class GithubRepositoryRectorSetUninstaller
     private $entityManager;
 
     /**
-     * @var GithubRepositoryRectorSetRepository
+     * @var GetGithubRepositoryRectorSetInstallationQuery
      */
-    private $rectorSetActivationRepository;
+    private $getGithubRepositoryRectorSetInstallationQuery;
+
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        GithubRepositoryRectorSetRepository $rectorSetActivationRepository
+        GetGithubRepositoryRectorSetInstallationQuery $getGithubRepositoryRectorSetInstallationQuery
     ) {
         $this->entityManager = $entityManager;
-        $this->rectorSetActivationRepository = $rectorSetActivationRepository;
+        $this->getGithubRepositoryRectorSetInstallationQuery = $getGithubRepositoryRectorSetInstallationQuery;
     }
 
     /**
-     * @throws RectorSetNotActiveException
+     * @throws RectorSetNotInstalledException
      */
-    public function uninstall(RectorSet $rectorSet, GithubRepository $githubRepository): void
+    public function uninstall(string $rectorSetName, int $githubRepositoryId): void
     {
-        $repositoryRectorSet = $this->rectorSetActivationRepository->getRectorSetActivationForRepository(
-            $rectorSet->getId(),
-            $githubRepository->getId()
+        $repositoryRectorSet = $this->getGithubRepositoryRectorSetInstallationQuery->query(
+            $rectorSetName,
+            $githubRepositoryId
         );
 
         $this->entityManager->remove($repositoryRectorSet);

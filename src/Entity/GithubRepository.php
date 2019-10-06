@@ -12,30 +12,19 @@ class GithubRepository
 {
     /**
      * @var int
-     * @ORM\Column(type="integer")
-     */
-    private $githubRepositoryId;
-
-    /**
-     * @var UuidInterface
      * @ORM\Id
-     * @ORM\Column(type="uuid")
+     * @ORM\Column(type="integer")
      */
     private $id;
 
-    public function __construct(UuidInterface $id, int $githubRepositoryId)
+
+    public function __construct(int $id)
     {
         $this->id = $id;
-        $this->githubRepositoryId = $githubRepositoryId;
     }
 
-    public function getId(): UuidInterface
+    public function getId(): int
     {
         return $this->id;
-    }
-
-    public function getGithubRepositoryId(): int
-    {
-        return $this->githubRepositoryId;
     }
 }

@@ -4,10 +4,10 @@ namespace Rector\RectorCI\RectorSet;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Rector\RectorCI\DateTime\DateTimeProvider;
-use Rector\RectorCI\Entity\GithubRepository;
-use Rector\RectorCI\Entity\RectorSet;
 use Rector\RectorCI\Entity\GithubRepositoryRectorSetInstallation;
+use Rector\RectorCI\Github\Query\GetGithubRepositoryQuery;
 use Rector\RectorCI\RectorSet\Exception\RectorSetAlreadyInstalledException;
+use Rector\RectorCI\RectorSet\Query\GetRectorSetByNameQuery;
 
 final class GithubRepositoryRectorSetInstaller
 {
@@ -21,19 +21,38 @@ final class GithubRepositoryRectorSetInstaller
      */
     private $dateTimeProvider;
 
+    /**
+     * @var GetRectorSetByNameQuery
+     */
+    private $getRectorSetByNameQuery;
+
+    /**
+     * @var GetGithubRepositoryQuery
+     */
+    private $getGithubRepositoryQuery;
+
+
     public function __construct(
         EntityManagerInterface $entityManager,
-        DateTimeProvider $dateTimeProvider
+        DateTimeProvider $dateTimeProvider,
+        GetRectorSetByNameQuery $getRectorSetByNameQuery,
+        GetGithubRepositoryQuery $getGithubRepositoryQuery
     ) {
         $this->entityManager = $entityManager;
         $this->dateTimeProvider = $dateTimeProvider;
+        $this->getRectorSetByNameQuery = $getRectorSetByNameQuery;
+        $this->getGithubRepositoryQuery = $getGithubRepositoryQuery;
     }
 
     /**
      * @throws RectorSetAlreadyInstalledException
      */
-    public function install(RectorSet $rectorSet, GithubRepository $githubRepository): void
+    public function install(string $rectorSetName, int $githubRepositoryId): void
     {
+        $rectorSet = $this->getRectorSetByNameQuery->query($rectorSetName);
+        $githubRepository = $this->getGithubRepositoryQuery->query($githubRepositoryId);
+
+
         // @TODO it might be already installed
         // throw new RectorSetAlreadyInstalledException();
 

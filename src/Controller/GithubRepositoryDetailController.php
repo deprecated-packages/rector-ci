@@ -2,8 +2,8 @@
 
 namespace Rector\RectorCI\Controller;
 
-use Rector\RectorCI\Repository\GithubRepositoryRepository;
-use Rector\RectorCI\Repository\RectorSetRepository;
+use Rector\RectorCI\Github\GithubRepositoryGetter;
+use Rector\RectorCI\RectorSet\Query\GetRectorSetsQuery;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -12,22 +12,22 @@ use Symfony\Component\Routing\Annotation\Route;
 final class GithubRepositoryDetailController extends AbstractController
 {
     /**
-     * @var RectorSetRepository
+     * @var GetRectorSetsQuery
      */
-    private $rectorSetRepository;
+    private $getRectorSetsQuery;
 
     /**
-     * @var GithubRepositoryRepository
+     * @var GithubRepositoryGetter
      */
-    private $githubRepositoryRepository;
+    private $githubRepositoryGetter;
 
 
     public function __construct(
-        RectorSetRepository $rectorSetRepository,
-        GithubRepositoryRepository $githubRepositoryRepository
+        GithubRepositoryGetter $githubRepositoryGetter,
+        GetRectorSetsQuery $getRectorSetsQuery
     ) {
-        $this->rectorSetRepository = $rectorSetRepository;
-        $this->githubRepositoryRepository = $githubRepositoryRepository;
+        $this->getRectorSetsQuery = $getRectorSetsQuery;
+        $this->githubRepositoryGetter = $githubRepositoryGetter;
     }
 
     /**
@@ -36,6 +36,7 @@ final class GithubRepositoryDetailController extends AbstractController
     public function __invoke(Request $request): Response
     {
         $githubRepositoryId = (int) $request->attributes->get('githubRepositoryId');
+        $this->githubRepositoryGetter->getGithubRepositoryOrCreateItIfNotExists($githubRepositoryId);
 
         // @TODO: check if organization has installation, if not, redirect user to github
 
@@ -44,7 +45,7 @@ final class GithubRepositoryDetailController extends AbstractController
         // @TODO: fetch activated sets for this repository
 
         return $this->render('githubRepository/githubRepositoryDetail.twig', [
-            'sets' => $this->rectorSetRepository->findAll(),
+            'sets' => $this->getRectorSetsQuery->query(),
             'installedSets' => [],
             'githubRepositoryId' => $githubRepositoryId,
         ]);

@@ -8,8 +8,8 @@ use League\OAuth2\Client\Token\AccessToken;
 use Ramsey\Uuid\Uuid;
 use Rector\RectorCI\Entity\User;
 use Rector\RectorCI\Github\Exceptions\GithubAuthenticationException;
-use Rector\RectorCI\Repository\UserRepository;
 use Rector\RectorCI\User\Exceptions\UserNotFoundException;
+use Rector\RectorCI\User\Query\GetUserByGithubUserIdQuery;
 use Rector\RectorCI\User\Security\GithubAuthenticator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -36,11 +36,6 @@ final class GithubUserAuthorizationController extends AbstractController
     private $session;
 
     /**
-     * @var UserRepository
-     */
-    private $userRepository;
-
-    /**
      * @var EntityManagerInterface
      */
     private $entityManager;
@@ -55,20 +50,26 @@ final class GithubUserAuthorizationController extends AbstractController
      */
     private $githubAuthenticator;
 
+    /**
+     * @var GetUserByGithubUserIdQuery
+     */
+    private $getUserByGithubUserIdQuery;
+
+
     public function __construct(
         GithubProvider $githubProvider,
         SessionInterface $session,
-        UserRepository $userRepository,
         EntityManagerInterface $entityManager,
         GithubAuthenticator $githubAuthenticator,
-        GuardAuthenticatorHandler $guardAuthenticatorHandler
+        GuardAuthenticatorHandler $guardAuthenticatorHandler,
+        GetUserByGithubUserIdQuery $getUserByGithubUserIdQuery
     ) {
         $this->githubProvider = $githubProvider;
         $this->session = $session;
-        $this->userRepository = $userRepository;
         $this->entityManager = $entityManager;
         $this->guardAuthenticatorHandler = $guardAuthenticatorHandler;
         $this->githubAuthenticator = $githubAuthenticator;
+        $this->getUserByGithubUserIdQuery = $getUserByGithubUserIdQuery;
     }
 
     /**
@@ -102,7 +103,7 @@ final class GithubUserAuthorizationController extends AbstractController
         $githubUserId = $githubUser->getId();
 
         try {
-            $user = $this->userRepository->getUserByGithubId($githubUserId);
+            $user = $this->getUserByGithubUserIdQuery->query($githubUserId);
         } catch (UserNotFoundException $userNotFoundException) {
             $user = $this->createUserFromGithub($githubUserId);
         }
