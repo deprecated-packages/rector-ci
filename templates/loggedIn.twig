@@ -1,0 +1,15 @@
+{% extends 'base.twig' %}
+
+{% block navigation %}
+    <ul>
+        <li>
+            User name + maybe photo
+        </li>
+        <li>
+            <a href="{{ path('dashboard') }}">My repositories</a>
+        </li>
+        <li>
+            <a href="#">Log out</a>
+        </li>
+    </ul>
+{% endblock %}

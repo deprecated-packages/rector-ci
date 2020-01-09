@@ -3,6 +3,7 @@
 namespace Rector\RectorCI\Controller;
 
 use Github\Client as Github;
+use Github\ResultPager;
 use Psr\Cache\CacheItemPoolInterface;
 use Rector\RectorCI\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,13 +22,11 @@ final class DashboardController extends AbstractController
      */
     private $cacheItemPool;
 
-
     public function __construct(Github $github, CacheItemPoolInterface $cacheItemPool)
     {
         $this->github = $github;
         $this->cacheItemPool = $cacheItemPool;
     }
-
 
     /**
      * @Route("/app/dashboard", name="dashboard", methods={"GET"})
@@ -40,17 +39,21 @@ final class DashboardController extends AbstractController
         $this->github->authenticate($user->getGithubAccessToken(), null, Github::AUTH_HTTP_TOKEN);
         $this->github->addCache($this->cacheItemPool);
 
-        $repositories = $this->github->currentUser()->repositories();
         $installedRepositories = $this->getInstalledRepositories();
 
-        $repositories = array_filter($repositories, static function(array $repository) use ($installedRepositories) {
+        $pager = new ResultPager($this->github);
+        $repositories = $pager->fetchAll($this->github->currentUser(), 'repositories', ['all']);
+
+        $repositories = array_filter($repositories, static function (array $repository) use (
+            $installedRepositories
+        ): bool {
             foreach ($installedRepositories as $installedRepository) {
                 if ($installedRepository['id'] === $repository['id']) {
                     return false;
                 }
             }
 
-           return true;
+            return true;
         });
 
         return $this->render('dashboard/dashboard.twig', [
@@ -58,7 +61,6 @@ final class DashboardController extends AbstractController
             'repositories' => $repositories,
         ]);
     }
-
 
     private function getInstalledRepositories(): array
     {

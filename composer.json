@@ -35,6 +35,7 @@
         "symfony/yaml": "^4.3"
     },
     "require-dev": {
+        "doctrine/doctrine-fixtures-bundle": "^3.2",
         "phpunit/phpunit": "^8.1",
         "roave/security-advisories": "dev-master",
         "symfony/browser-kit": "^4.3",

@@ -15,4 +15,5 @@ return [
     Sentry\SentryBundle\SentryBundle::class => ['all' => true],
     Cache\AdapterBundle\CacheAdapterBundle::class => ['all' => true],
     League\FlysystemBundle\FlysystemBundle::class => ['all' => true],
+    Doctrine\Bundle\FixturesBundle\DoctrineFixturesBundle::class => ['dev' => true, 'test' => true],
 ];

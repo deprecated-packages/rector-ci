@@ -1,4 +1,4 @@
-{% extends 'base.twig' %}
+{% extends 'loggedIn.twig' %}
 
 {% block body %}
     Hello user!
@@ -6,13 +6,18 @@
     {% if is_granted(constant('Rector\\RectorCI\\User\\Security\\UserRole::BETA_TESTER')) %}
         {% for repository in installedRepositories %}
             <p>
-                {{ repository.full_name }} (installed) <button>Detail</button> - 0 sets
+                <a href="{{ path('github_repository_detail', {githubRepositoryId: repository.id}) }}">
+                    [Installed]
+                    {{ repository.full_name }}
+                </a>
             </p>
         {% endfor %}
 
         {% for repository in repositories %}
             <p>
-                {{ repository.full_name }} <button>install</button> - 0 sets
+                <a href="{{ path('github_repository_detail', {githubRepositoryId: repository.id}) }}">
+                    {{ repository.full_name }}
+                </a>
             </p>
         {% endfor %}
     {% else %}

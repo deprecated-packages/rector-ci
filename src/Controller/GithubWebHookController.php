@@ -6,14 +6,16 @@ use Github\Client as Github;
 use Github\Exception\RuntimeException;
 use Github\Exception\ValidationFailedException;
 use Nette\Utils\Json;
-use Rector\RectorCI\GitHub\Events\GithubEvent;
-use Rector\RectorCI\GitHub\GithubInstallationAuthenticator;
+use Rector\RectorCI\Github\Events\GithubEvent;
+use Rector\RectorCI\Github\GithubInstallationAuthenticator;
+use Rector\RectorCI\GitRepository\GitRepositoryDownloader;
+use Rector\RectorCI\GitRepository\GitRepositoryPathGetter;
+use Rector\RectorCI\RectorSet\RectorSetRunner;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Annotation\Route;
 
-final class GitHubWebHookController
+final class GithubWebHookController
 {
     /**
      * @var GithubInstallationAuthenticator
@@ -25,10 +27,35 @@ final class GitHubWebHookController
      */
     private $github;
 
-    public function __construct(Github $github, GithubInstallationAuthenticator $githubInstallationAuthenticator)
+    /**
+     * @var RectorSetRunner
+     */
+    private $rectorSetRunner;
+
+    /**
+     * @var GitRepositoryPathGetter
+     */
+    private $gitRepositoryPathGetter;
+
+    /**
+     * @var GitRepositoryDownloader
+     */
+    private $gitRepositoryDownloader;
+
+
+    public function __construct(
+        Github $github,
+        GithubInstallationAuthenticator $githubInstallationAuthenticator,
+        RectorSetRunner $rectorSetRunner,
+        GitRepositoryPathGetter $gitRepositoryPathGetter,
+        GitRepositoryDownloader $gitRepositoryDownloader
+    )
     {
         $this->githubInstallationAuthenticator = $githubInstallationAuthenticator;
         $this->github = $github;
+        $this->rectorSetRunner = $rectorSetRunner;
+        $this->gitRepositoryPathGetter = $gitRepositoryPathGetter;
+        $this->gitRepositoryDownloader = $gitRepositoryDownloader;
     }
 
     /**
@@ -57,45 +84,13 @@ final class GitHubWebHookController
         $username = $webhookData->repository->owner->login;
         $repositoryName = $webhookData->repository->name;
         $accessToken = $this->githubInstallationAuthenticator->authenticate($webhookData->installation->id);
+        $commitHash = $webhookData->check_suite->head_sha;
 
-        $repositoryDirectory = __DIR__ . '/../../repositories/' . $repositoryFullName;
+        $repositoryDirectory = $this->gitRepositoryPathGetter->get($repositoryFullName);
 
-        if (! file_exists($repositoryDirectory)) {
-            $this->cloneRepository($repositoryFullName, $accessToken, $repositoryDirectory);
-        }
+        $this->gitRepositoryDownloader->prepareRepositoryToCommit($repositoryFullName, $accessToken, $commitHash);
 
-        $gitCheckoutChangesProcess = new Process(['git', 'checkout', '-f'], $repositoryDirectory);
-        $gitCheckoutChangesProcess->mustRun();
-
-        $gitFetchProcess = new Process(['git', 'fetch', '-p'], $repositoryDirectory);
-        $gitFetchProcess->mustRun();
-
-        $gitCheckoutHeadProcess = new Process([
-            'git',
-            'checkout',
-            $webhookData->check_suite->head_sha,
-        ], $repositoryDirectory);
-        $gitCheckoutHeadProcess->mustRun();
-
-        $composerInstallProcess = new Process(['composer', 'install'], $repositoryDirectory);
-        $composerInstallProcess->setTimeout(null);
-        $composerInstallProcess->mustRun();
-
-        // @TODO: rector binary?
-        // @TODO: case target directory does not have rector.yaml
-        // @TODO: determine what directories to search, recursive search for common used code directories? (src, packages/**/src, tests), or create .rector-ci.yaml?
-        $rectorProcess = new Process([
-            '../../../vendor/bin/rector',
-            'process',
-            'src',
-            '--output-format=json',
-        ], $repositoryDirectory, [
-            'APP_ENV' => false,
-            'APP_DEBUG' => false,
-            'SYMFONY_DOTENV_VARS' => false,
-        ]);
-        $rectorProcess->setTimeout(null);
-        $rectorProcess->mustRun();
+        $rectorProcess = $this->rectorSetRunner->runSetOnDirectory('coding-style', $repositoryDirectory);
 
         $rectorProcessOutput = Json::decode($rectorProcess->getOutput());
         $blobShas = [];
@@ -172,13 +167,5 @@ final class GitHubWebHookController
         }
 
         return new Response('OK');
-    }
-
-    private function cloneRepository(string $repositoryFullName, string $accessToken, string $repositoryDirectory): void
-    {
-        $cloneUrl = sprintf('https://x-access-token:%s@github.com/%s.git', $accessToken, $repositoryFullName);
-
-        $cloneProcess = new Process(['git', 'clone', $cloneUrl, $repositoryDirectory]);
-        $cloneProcess->mustRun();
     }
 }

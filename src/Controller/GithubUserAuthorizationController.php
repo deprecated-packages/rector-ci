@@ -3,13 +3,13 @@
 namespace Rector\RectorCI\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
+use League\OAuth2\Client\Provider\Github as GithubProvider;
 use League\OAuth2\Client\Token\AccessToken;
 use Ramsey\Uuid\Uuid;
 use Rector\RectorCI\Entity\User;
-use Rector\RectorCI\Exception\GitHub\GitHubAuthenticationException;
-use League\OAuth2\Client\Provider\Github as GithubProvider;
-use Rector\RectorCI\Repository\UserRepository;
+use Rector\RectorCI\Github\Exceptions\GithubAuthenticationException;
 use Rector\RectorCI\User\Exceptions\UserNotFoundException;
+use Rector\RectorCI\User\Query\GetUserByGithubUserIdQuery;
 use Rector\RectorCI\User\Security\GithubAuthenticator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -36,11 +36,6 @@ final class GithubUserAuthorizationController extends AbstractController
     private $session;
 
     /**
-     * @var UserRepository
-     */
-    private $userRepository;
-
-    /**
      * @var EntityManagerInterface
      */
     private $entityManager;
@@ -55,22 +50,26 @@ final class GithubUserAuthorizationController extends AbstractController
      */
     private $githubAuthenticator;
 
+    /**
+     * @var GetUserByGithubUserIdQuery
+     */
+    private $getUserByGithubUserIdQuery;
+
 
     public function __construct(
         GithubProvider $githubProvider,
         SessionInterface $session,
-        UserRepository $userRepository,
         EntityManagerInterface $entityManager,
         GithubAuthenticator $githubAuthenticator,
-        GuardAuthenticatorHandler $guardAuthenticatorHandler
-    )
-    {
+        GuardAuthenticatorHandler $guardAuthenticatorHandler,
+        GetUserByGithubUserIdQuery $getUserByGithubUserIdQuery
+    ) {
         $this->githubProvider = $githubProvider;
         $this->session = $session;
-        $this->userRepository = $userRepository;
         $this->entityManager = $entityManager;
         $this->guardAuthenticatorHandler = $guardAuthenticatorHandler;
         $this->githubAuthenticator = $githubAuthenticator;
+        $this->getUserByGithubUserIdQuery = $getUserByGithubUserIdQuery;
     }
 
     /**
@@ -80,7 +79,7 @@ final class GithubUserAuthorizationController extends AbstractController
     {
         $code = $request->query->get('code');
 
-        if (!$code) {
+        if (! $code) {
             $authUrl = $this->githubProvider->getAuthorizationUrl();
             $this->session->set(self::STATE_SESSION_NAME, $this->githubProvider->getState());
 
@@ -92,7 +91,7 @@ final class GithubUserAuthorizationController extends AbstractController
         if ($this->session->has(self::STATE_SESSION_NAME) && $state !== $this->session->get(self::STATE_SESSION_NAME)) {
             $this->clearState();
 
-            throw new GitHubAuthenticationException('Invalid state!');
+            throw new GithubAuthenticationException('Invalid state!');
         }
 
         /** @var AccessToken $token */
@@ -104,8 +103,8 @@ final class GithubUserAuthorizationController extends AbstractController
         $githubUserId = $githubUser->getId();
 
         try {
-            $user = $this->userRepository->getUserByGithubId($githubUserId);
-        } catch (UserNotFoundException $e) {
+            $user = $this->getUserByGithubUserIdQuery->query($githubUserId);
+        } catch (UserNotFoundException $userNotFoundException) {
             $user = $this->createUserFromGithub($githubUserId);
         }
 
@@ -125,22 +124,17 @@ final class GithubUserAuthorizationController extends AbstractController
         return $this->redirectToRoute('dashboard');
     }
 
+    private function clearState(): void
+    {
+        $this->session->remove(self::STATE_SESSION_NAME);
+    }
 
     private function createUserFromGithub(int $githubUserId): User
     {
-        $user = new User(
-            Uuid::uuid4(),
-            $githubUserId
-        );
+        $user = new User(Uuid::uuid4(), $githubUserId);
 
         $this->entityManager->persist($user);
 
         return $user;
-    }
-
-
-    private function clearState(): void
-    {
-        $this->session->remove(self::STATE_SESSION_NAME);
     }
 }

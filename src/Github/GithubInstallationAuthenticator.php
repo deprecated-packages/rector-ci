@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Rector\RectorCI\GitHub;
+namespace Rector\RectorCI\Github;
 
 use Github\Client;
 

@@ -10,20 +10,8 @@ use Symfony\Component\Security\Core\User\UserInterface;
 /**
  * @ORM\Entity()
  */
-final class User implements UserInterface
+class User implements UserInterface
 {
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    private $id;
-
-    /**
-     * @ORM\Column(type="integer", unique=true)
-     * @var string
-     */
-    private $githubUserId;
-
     /**
      * @ORM\Column(type="string", nullable=true)
      * @var string
@@ -31,11 +19,23 @@ final class User implements UserInterface
     private $githubAccessToken;
 
     /**
+     * @ORM\Column(type="integer", unique=true)
+     * @var int
+     */
+    private $githubUserId;
+
+    /**
      * @ORM\Column(type="boolean")
      * @var boolean
      */
-    private $isBetaTester;
+    private $isBetaTester = false;
 
+    /**
+     * @var UuidInterface
+     * @ORM\Id
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    private $id;
 
     public function __construct(UuidInterface $id, int $githubUserId)
     {
@@ -44,12 +44,10 @@ final class User implements UserInterface
         $this->isBetaTester = false;
     }
 
-
     public function updateGithubAccessToken(string $githubAccessToken): void
     {
         $this->githubAccessToken = $githubAccessToken;
     }
-
 
     /**
      * @return string[]
@@ -65,32 +63,32 @@ final class User implements UserInterface
         return $roles;
     }
 
-
     public function getPassword(): string
     {
         return '';
     }
-
 
     public function getSalt(): ?string
     {
         return null;
     }
 
-
     public function getUsername(): string
     {
         return $this->id->toString();
     }
 
-
     public function eraseCredentials(): void
     {
     }
 
-
     public function getGithubAccessToken(): string
     {
         return $this->githubAccessToken;
+    }
+
+    public function getGithubUserId(): int
+    {
+        return $this->githubUserId;
     }
 }

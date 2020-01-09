@@ -2,9 +2,12 @@
 
 namespace Rector\RectorCI\User\Security;
 
+use LogicException;
 use Rector\RectorCI\Entity\User;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -18,6 +21,15 @@ final class GithubAuthenticator extends AbstractGuardAuthenticator
      */
     private const SESSION_NAME = 'github_auth';
 
+    /**
+     * @var RouterInterface
+     */
+    private $router;
+
+    public function __construct(RouterInterface $router)
+    {
+        $this->router = $router;
+    }
 
     public function supports(Request $request): bool
     {
@@ -54,9 +66,11 @@ final class GithubAuthenticator extends AbstractGuardAuthenticator
         return true;
     }
 
-    public function onAuthenticationFailure(Request $request, AuthenticationException $authenticationException): ?Response
-    {
-        throw new \LogicException('Not implemented yet');
+    public function onAuthenticationFailure(
+        Request $request,
+        AuthenticationException $authenticationException
+    ): ?Response {
+        throw new LogicException('Not implemented yet');
     }
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey): ?Response
@@ -80,6 +94,6 @@ final class GithubAuthenticator extends AbstractGuardAuthenticator
 
     public function start(Request $request, ?AuthenticationException $authenticationException = null)
     {
-        throw new \LogicException('Not implemented yet');
+        return new RedirectResponse($this->router->generate('github_authorization'));
     }
 }
