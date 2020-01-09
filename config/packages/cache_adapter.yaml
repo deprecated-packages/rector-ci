@@ -1,6 +1,0 @@
-cache_adapter:
-    providers:
-        default:
-            factory: cache.factory.filesystem
-            options:
-                flysystem_service: flysystem.adapter.default.storage

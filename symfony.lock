@@ -232,14 +232,23 @@
     "nesbot/carbon": {
         "version": "2.18.0"
     },
+    "nette/application": {
+        "version": "v3.0.3"
+    },
     "nette/bootstrap": {
         "version": "v2.4.6"
+    },
+    "nette/component-model": {
+        "version": "v3.0.0"
     },
     "nette/di": {
         "version": "v2.4.15"
     },
     "nette/finder": {
         "version": "v2.5.0"
+    },
+    "nette/http": {
+        "version": "v3.0.3"
     },
     "nette/neon": {
         "version": "v3.0.0"
@@ -249,6 +258,9 @@
     },
     "nette/robot-loader": {
         "version": "v3.1.1"
+    },
+    "nette/routing": {
+        "version": "v3.0.0"
     },
     "nette/schema": {
         "version": "v1.0.0"
@@ -262,6 +274,9 @@
     "ocramius/proxy-manager": {
         "version": "2.1.1"
     },
+    "ondram/ci-detector": {
+        "version": "3.1.1"
+    },
     "paragonie/random_compat": {
         "version": "v9.99.99"
     },
@@ -270,6 +285,9 @@
     },
     "phar-io/version": {
         "version": "2.0.1"
+    },
+    "php": {
+        "version": "7.3"
     },
     "php-cs-fixer/diff": {
         "version": "v1.3.0"
@@ -319,6 +337,9 @@
     "phpstan/phpstan": {
         "version": "0.11.5"
     },
+    "phpstan/phpstan-phpunit": {
+        "version": "0.12.5"
+    },
     "phpunit/php-code-coverage": {
         "version": "7.0.3"
     },
@@ -353,6 +374,12 @@
         "version": "1.0.1"
     },
     "psr/container": {
+        "version": "1.0.0"
+    },
+    "psr/event-dispatcher": {
+        "version": "1.0.0"
+    },
+    "psr/http-client": {
         "version": "1.0.0"
     },
     "psr/http-factory": {
@@ -533,6 +560,9 @@
     "symfony/dotenv": {
         "version": "v4.2.8"
     },
+    "symfony/error-handler": {
+        "version": "v5.0.2"
+    },
     "symfony/event-dispatcher": {
         "version": "v4.2.8"
     },
@@ -656,6 +686,9 @@
     },
     "symfony/polyfill-php73": {
         "version": "v1.11.0"
+    },
+    "symfony/polyfill-uuid": {
+        "version": "v1.13.1"
     },
     "symfony/process": {
         "version": "v4.2.8"
@@ -789,17 +822,14 @@
             "config/routes/dev/web_profiler.yaml"
         ]
     },
-    "symfony/web-server-bundle": {
-        "version": "3.3",
-        "recipe": {
-            "repo": "github.com/symfony/recipes",
-            "branch": "master",
-            "version": "3.3",
-            "ref": "dae9b39fd6717970be7601101ce5aa960bf53d9a"
-        }
-    },
     "symfony/yaml": {
         "version": "v4.2.8"
+    },
+    "symplify/auto-bind-parameter": {
+        "version": "v7.2.0"
+    },
+    "symplify/autowire-array-parameter": {
+        "version": "v7.2.0"
     },
     "symplify/coding-standard": {
         "version": "v6.0.0"
@@ -812,6 +842,12 @@
     },
     "symplify/phpstan-extensions": {
         "version": "v6.0.3"
+    },
+    "symplify/set-config-resolver": {
+        "version": "v7.2.0"
+    },
+    "symplify/smart-file-system": {
+        "version": "v7.2.0"
     },
     "theseer/tokenizer": {
         "version": "1.1.2"
