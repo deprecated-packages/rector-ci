@@ -9,8 +9,8 @@ on:
 jobs:
     tests:
         strategy:
+            fail-fast: false
             matrix:
-                fail-fast: false
                 actions:
                     - name: Cache warmup
                       run: bin/console cache:warmup
