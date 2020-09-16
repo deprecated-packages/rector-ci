@@ -10,12 +10,22 @@ jobs:
     tests:
         strategy:
             matrix:
+                fail-fast: false
                 actions:
-                    - run: composer run-script phpstan
-                    - run: composer run-script check-cs
-                    - run: vendor/bin/phpunit
+                    - name: Cache warmup
+                      run: bin/console cache:warmup
+
+                    - name: PHPStan
+                      run: composer run-script phpstan
+
+                    - name: Easy Coding Standard
+                      run: composer run-script check-cs
+
+                    - name: Tests
+                      run: vendor/bin/phpunit
 
         runs-on: ubuntu-latest
+        name: ${{  matrix.actions.name}}
 
         steps:
             -   uses: actions/checkout@v2
@@ -24,6 +34,6 @@ jobs:
                     php-version: 7.4
                     coverage: none
 
-            -   run: composer install --no-progress --ansi
+            -   run: composer install --no-progress --ansi --no-script
 
             -   run: ${{ matrix.actions.run }}
