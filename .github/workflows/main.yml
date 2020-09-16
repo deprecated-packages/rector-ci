@@ -1,0 +1,29 @@
+name: Main
+
+on:
+    pull_request: null
+    push:
+        branches:
+            - master
+
+jobs:
+    tests:
+        strategy:
+            matrix:
+                actions:
+                    - run: composer run-script phpstan
+                    - run: composer run-script check-cs
+                    - run: vendor/bin/phpunit
+
+        runs-on: ubuntu-latest
+
+        steps:
+            -   uses: actions/checkout@v2
+            -   uses: shivammathur/setup-php@v2
+                with:
+                    php-version: 7.4
+                    coverage: none
+
+            -   run: composer install --no-progress --ansi
+
+            -   run: ${{ matrix.actions.run }}
