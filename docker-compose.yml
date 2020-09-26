@@ -16,3 +16,24 @@ services:
             - /var/www/rector-ci.org/var/cache
         volumes:
             - .:/var/www/rector-ci.org:cached
+
+    scheduler:
+        image: docker.pkg.github.com/rectorphp/docker-base-bistro-image-builder/bistro:latest
+        working_dir: "/home/bistro/bistro"
+        command: [ "./cmake/Debug/server/bistro_scheduler", "--server_port=6789", "--http_server_port=6790", "--config_file=scripts/test_configs/simple", "--instance_node_name=scheduler" ]
+        ports:
+            - "6789:6789"
+            - "6790:6790"
+#        volumes:
+#            - scripts/test_configs/simple
+
+    worker:
+        image: docker.pkg.github.com/rectorphp/docker-base-bistro-image-builder/bistro:latest
+        working_dir: "/home/bistro/bistro"
+        command: [ "./cmake/Debug/worker/bistro_worker", "--server_port=27182", "--scheduler_host=scheduler", "--scheduler_port=6789", "--worker_command=$HOME/demo_bistro_task.sh", "--data_dir=." ]
+        ports:
+            - "27182:27182"
+        depends_on:
+            - scheduler
+#        volumes:
+#            - $HOME/demo_bistro_task.sh
