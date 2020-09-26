@@ -1,0 +1,26 @@
+version: "3.7"
+services:
+    web:
+        image: rector-ci_org
+        restart: unless-stopped
+        build:
+            context: .
+            target: dev
+            dockerfile: Dockerfile
+        environment:
+            XDEBUG_CONFIG: "remote_host=host.docker.internal"
+            PHP_IDE_CONFIG: "serverName=rector-ci_org"
+        ports:
+            - "8080:80"
+        tmpfs:
+            - /var/www/rector-ci.org/var/cache
+        volumes:
+            - .:/var/www/rector-ci.org:cached
+
+    runner:
+        image: gitlab/gitlab-runner:latest
+        restart: unless-stopped
+        volumes:
+            - "/var/run/docker.sock:/var/run/docker.sock"
+            - "./.docker/gitlab-runner-config:/etc/gitlab-runner"
+            - ".:/project"
