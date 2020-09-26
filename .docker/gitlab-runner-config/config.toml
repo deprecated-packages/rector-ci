@@ -1,0 +1,9 @@
+[[runners]]
+  name = "rector-runner"
+  url = "http://web/"
+  token = "TOKEN"
+  limit = 0
+  executor = "docker"
+  builds_dir = ""
+  shell = ""
+  environment = ["ENV=value", "LC_ALL=en_US.UTF-8"]

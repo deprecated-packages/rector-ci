@@ -32,10 +32,10 @@ final class UninstallRectorSetFromGithubRepositoryController extends AbstractCon
 
     public function __construct(
         GithubRepositoryRectorSetUninstaller $rectorSetUninstaller,
-        GithubRepositoryRepository $githubRepositoryRepository,
+        // GithubRepositoryRepository $githubRepositoryRepository,
         GetRectorSetByNameQuery $getRectorSetByNameQuery
     ) {
-        $this->githubRepositoryRepository = $githubRepositoryRepository;
+        // $this->githubRepositoryRepository = $githubRepositoryRepository;
         $this->rectorSetUninstaller = $rectorSetUninstaller;
         $this->getRectorSetByNameQuery = $getRectorSetByNameQuery;
     }
