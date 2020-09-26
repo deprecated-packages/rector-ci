@@ -16,11 +16,3 @@ services:
             - /var/www/rector-ci.org/var/cache
         volumes:
             - .:/var/www/rector-ci.org:cached
-
-    runner:
-        image: gitlab/gitlab-runner:latest
-        restart: unless-stopped
-        volumes:
-            - "/var/run/docker.sock:/var/run/docker.sock"
-            - "./.docker/gitlab-runner-config:/etc/gitlab-runner"
-            - ".:/project"
