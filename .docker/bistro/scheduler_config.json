@@ -1,0 +1,18 @@
+{
+    "bistro_settings": {
+        "enabled": true,
+        "resources": {
+            "instance": {"concurrency": {"limit": 3, "default": 1}}
+        },
+
+        "nodes" : {
+            "levels": [],
+            "node_sources" : []
+        }
+    },
+
+    "bistro_job->simple_job" : {
+        "enabled" : true,
+        "owner": "rector_ci"
+    }
+}
